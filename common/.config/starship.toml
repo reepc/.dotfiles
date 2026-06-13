@@ -1,0 +1,184 @@
+# ============================================================
+#  Starship Config — Tokyo Night inspired, minimal, two-line
+# ============================================================
+#  Palette based on Tokyo Night + Catppuccin Mocha
+#  - Background-matched, low-saturation
+#  - Two-line prompt: info on top, command on bottom
+#  - Python: shows venv (priority) or conda env
+#  - No rainbow / no powerline arrows, just colored text
+# ============================================================
+
+format = """
+$os\
+$username\
+$hostname\
+$directory\
+$git_branch\
+$git_status\
+$python\
+$conda\
+$nodejs\
+$rust\
+$golang\
+$cmd_duration\
+$line_break\
+$character"""
+
+# Add a touch of breathing room
+add_newline = true
+
+# ------------------------------------------------------------
+#  Palette (Tokyo Night Storm-ish)
+# ------------------------------------------------------------
+palette = "tokyo"
+
+[palettes.tokyo]
+bg          = "#1a1b26"
+fg          = "#c0caf5"
+muted       = "#565f89"
+blue        = "#7aa2f7"
+cyan        = "#7dcfff"
+purple      = "#bb9af7"
+green       = "#9ece6a"
+yellow      = "#e0af68"
+orange      = "#ff9e64"
+red         = "#f7768e"
+pink        = "#f5bde6"
+
+# ------------------------------------------------------------
+#  OS (show symbol only, no name)
+# ------------------------------------------------------------
+[os]
+disabled = false
+style = "fg"
+format = "[$symbol]($style) "
+
+[os.symbols]
+Macos = ""
+Arch = ""
+Ubuntu = ""
+Debian = ""
+Fedora = ""
+Linux = ""
+Windows = "󰍲"
+
+# ------------------------------------------------------------
+#  Username and Hostname
+# ------------------------------------------------------------
+[username]
+show_always = true
+style_user = "blue"
+style_root = "red"
+format = "[$user]($style)"
+
+[hostname]
+ssh_only = false
+style = "muted"
+format = "[@$hostname]($style) "
+
+# ------------------------------------------------------------
+#  Directory
+# ------------------------------------------------------------
+[directory]
+style = "cyan"
+truncation_length = 4
+truncation_symbol = "…/"
+home_symbol = "~"
+read_only = "  "
+read_only_style = "red"
+format = "[$path]($style)[$read_only]($read_only_style) "
+
+# ------------------------------------------------------------
+#  Git
+# ------------------------------------------------------------
+[git_branch]
+symbol = ""
+style = "purple"
+format = "[ on ](muted)[$symbol $branch]($style) "
+
+[git_status]
+style = "yellow"
+format = '([ $all_status$ahead_behind]($style)) '
+conflicted = "= "
+ahead = "⇡${count} "
+behind = "⇣${count} "
+diverged = "⇕⇡${ahead_count}⇣${behind_count} "
+up_to_date = ""
+untracked = "?${count} "
+stashed = "\\$ "
+modified = "!${count} "
+staged = "+${count} "
+renamed = "»${count} "
+deleted = "✘${count} "
+
+# ------------------------------------------------------------
+#  Python — show venv (priority) OR conda env, never both
+# ------------------------------------------------------------
+[python]
+symbol = ""
+style = "yellow"
+format = '[${symbol} ${pyenv_prefix}(${version} )(\($virtualenv\) )]($style) '
+detect_extensions = ["py"]
+detect_files = ["requirements.txt", "pyproject.toml", "Pipfile", ".python-version"]
+detect_folders = [".venv", "venv"]
+python_binary = ["python3", "python"]
+
+[conda]
+symbol = ""
+style = "green"
+format = "[$symbol $environment]($style) "
+# Hide conda when a venv is active OR when in base environment.
+# (Starship hides conda automatically when a venv is on PATH.)
+ignore_base = true
+truncation_length = 1
+
+# ------------------------------------------------------------
+#  Other languages
+# ------------------------------------------------------------
+[nodejs]
+symbol = ""
+style = "green"
+format = "[$symbol ($version )]($style) "
+
+[rust]
+symbol = "󱘗"
+style = "orange"
+format = "[$symbol ($version )]($style) "
+
+[golang]
+symbol = ""
+style = "cyan"
+format = "[$symbol ($version )]($style) "
+
+# ------------------------------------------------------------
+#  Command duration (for long-running commands)
+# ------------------------------------------------------------
+[cmd_duration]
+min_time = 2_000
+style = "muted"
+format = "[took $duration]($style) "
+
+# ------------------------------------------------------------
+#  Character — subtle change on success/failure
+# ------------------------------------------------------------
+# Success: soft purple chevron
+# Error:   muted red chevron with double-mark
+[character]
+success_symbol = "[❯](purple)"
+error_symbol = "[❯](red)"
+# vimcmd_symbol = "[❮](green)"
+
+# ------------------------------------------------------------
+#  Disabled modules (keep prompt clean)
+# ------------------------------------------------------------
+[package]
+disabled = true
+
+[aws]
+disabled = true
+
+[gcloud]
+disabled = true
+
+[kubernetes]
+disabled = true
