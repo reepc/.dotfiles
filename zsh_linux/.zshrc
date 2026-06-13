@@ -9,9 +9,7 @@ export PATH="$HOME/.local/bin:$HOME/bin:/usr/local/bin:$PATH"
 export PATH="/usr/local/cuda/bin:$PATH"
 # export LD_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu:/usr/local/cuda/lib64:$LD_LIBRARY_PATH
 
-# ── Completions ───────────────────────────────────────────────────
-# Includes compinit — must come before plugins that hook into completion
-source ~/.zsh_completions.zsh
+fpath=("$HOME/.zsh-completions/src" $fpath)
 
 # ── Plugins ───────────────────────────────────────────────────────
 # Install: sudo apt install zsh-autosuggestions zsh-syntax-highlighting
@@ -19,6 +17,10 @@ source ~/.zsh_completions.zsh
   source /usr/share/zsh-autosuggestions/zsh-autosuggestions.zsh
 [[ -f /usr/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh ]] && \
   source /usr/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+
+# ── Completions ───────────────────────────────────────────────────
+# Includes compinit — must come before plugins that hook into completion
+source ~/.zsh_completions.zsh
 
 # ── Zoxide (replaces z) ──────────────────────────────────────────
 eval "$(zoxide init zsh)"

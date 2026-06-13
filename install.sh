@@ -50,7 +50,7 @@ setup_linux() {
   sudo apt-get update -qq
 
   for pkg in zsh stow tmux curl wget git \
-             zsh-autosuggestions zsh-syntax-highlighting zsh-completions; do
+             zsh-autosuggestions zsh-syntax-highlighting; do
     apt_install "$pkg"
   done
 
@@ -60,6 +60,13 @@ setup_linux() {
     info "Symlinking batcat → bat..."
     mkdir -p "$HOME/.local/bin"
     ln -sf "$(which batcat)" "$HOME/.local/bin/bat"
+  fi
+
+  if [[ ! -d "$HOME/.zsh-completions" ]]; then
+    info "Cloning zsh-completions..."
+    git clone https://github.com/zsh-users/zsh-completions "$HOME/.zsh-completions"
+  else
+    skip "zsh-completions"
   fi
 
   # eza — not in standard apt, needs its own repo
