@@ -38,8 +38,28 @@ opt.wrap = false             -- don't wrap long lines (toggle later if you prefe
 -- === Editing behavior ===
 opt.mouse = "a"              -- enable mouse — yes, even though you're learning motions.
                              -- It's a safety net, not a crutch. Remove it later if you want to force yourself.
-opt.clipboard = ""           -- DON'T sync to system clipboard by default. We'll wire OSC52
-                             -- separately so yank works correctly over SSH. (More on this below.)
+-- === Clipboard (OSC52) ===
+-- `unnamedplus` makes y / d / p use the system clipboard (the `+` register), so
+-- copy & paste "just work" like a normal editor.
+opt.clipboard = "unnamedplus"
+-- Over SSH there's no local clipboard to reach. OSC52 is an escape sequence that
+-- tells YOUR terminal emulator to copy text into your real machine's clipboard.
+-- Neovim 0.10+ ships this provider built-in. We only swap the provider in when
+-- inside an SSH session; locally nvim already uses pbcopy/wl-copy/xclip.
+-- Paste reads from Neovim's own register (not the terminal) to avoid the hangs
+-- some terminals cause when queried — to paste FROM your local clipboard over
+-- SSH, use the terminal's own paste (Cmd/Ctrl+V) in insert mode.
+if os.getenv("SSH_TTY") then
+  local osc52 = require("vim.ui.clipboard.osc52")
+  local function paste()
+    return { vim.fn.split(vim.fn.getreg(""), "\n"), vim.fn.getregtype("") }
+  end
+  vim.g.clipboard = {
+    name = "OSC 52",
+    copy = { ["+"] = osc52.copy("+"), ["*"] = osc52.copy("*") },
+    paste = { ["+"] = paste, ["*"] = paste },
+  }
+end
 opt.undofile = true          -- persist undo history to disk — undo even after closing a file
 opt.swapfile = false         -- no swap files (they cause "file already open" annoyances)
 

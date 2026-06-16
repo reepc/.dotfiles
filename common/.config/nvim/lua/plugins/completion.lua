@@ -25,6 +25,15 @@ return {
       completion = {
         documentation = { auto_show = true }, -- show docs popup next to suggestions
       },
+      -- Command-line completion: when you press `:` and start typing a command,
+      -- show the same dropdown automatically (instead of only on <Tab>).
+      -- Suggests commands, their arguments, file paths, etc. Same keys as above:
+      -- <C-n>/<C-p> to move, <C-y> to accept.
+      cmdline = {
+        completion = {
+          menu = { auto_show = true },
+        },
+      },
     },
   },
 }

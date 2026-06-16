@@ -1,5 +1,5 @@
 -- lua/plugins/neotree.lua
--- The file explorer sidebar — your VSCode left panel. Toggle it with <leader>e.
+-- The file explorer sidebar — your VSCode left panel. Toggle it with <leader>fe.
 -- Honest note: many Vim users barely use a tree and rely on Telescope's find-files
 -- instead. Try both; keep what fits. The tree is comforting coming from VSCode.
 
