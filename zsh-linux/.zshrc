@@ -22,9 +22,6 @@ fpath=("$HOME/.zsh-completions/src" $fpath)
 # Includes compinit — must come before plugins that hook into completion
 source ~/.zsh_completions.zsh
 
-# ── Zoxide (replaces z) ──────────────────────────────────────────
-eval "$(zoxide init zsh)"
-
 # ── fzf ──────────────────────────────────────────────────────────
 eval "$(fzf --zsh)"
 export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
@@ -44,6 +41,10 @@ zstyle ':completion:*' list-colors ${(s.:.)LS_COLORS}
 zstyle ':fzf-tab:complete:cd:*' fzf-preview 'eza --color=always --tree --icons --level=2 -- $realpath'
 zstyle ':fzf-tab:complete:cd:*' fzf-min-width 80
 zstyle ':fzf-tab:complete:*:*' fzf-preview 'bat --color=always $realpath 2>/dev/null || eza --tree --icons $realpath'
+
+# ── Zoxide (init + omz/zsh-z-style `z` tab completion) ────────────
+# Sourced after compinit & fzf-tab so completion + preview work.
+source ~/.zsh_zoxide.zsh
 
 # ── Custom commands ───────────────────────────────────────────────
 [[ -f ~/.custom_commands.sh ]] && source ~/.custom_commands.sh

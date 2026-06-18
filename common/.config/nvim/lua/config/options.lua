@@ -6,6 +6,11 @@
 local opt = vim.opt
 vim.g.have_nerd_font = true -- for statusline icons; set to false if you don't have a nerd font installed
 
+-- Disable netrw (Neovim's built-in file explorer) so oil.nvim handles directories
+-- instead. Must be set BEFORE any plugin loads, hence here at the top.
+vim.g.loaded_netrw = 1
+vim.g.loaded_netrwPlugin = 1
+
 -- === Line numbers ===
 opt.number = true            -- show absolute line number on the current line
 opt.relativenumber = true    -- show relative numbers on other lines.

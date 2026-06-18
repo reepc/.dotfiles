@@ -32,6 +32,17 @@ map("n", "<C-u>", "<C-u>zz", { desc = "Half-page up (centered)" })
 map("n", "n", "nzzzv", { desc = "Next search result (centered)" })
 map("n", "N", "Nzzzv", { desc = "Prev search result (centered)" })
 
+-- Toggle focus between the neo-tree file explorer and your code with one key.
+-- If you're IN the tree, jump back to the previous (code) window.
+-- If you're in code, focus the tree — opening it first if it isn't visible.
+map("n", "<leader>e", function()
+  if vim.bo.filetype == "neo-tree" then
+    vim.cmd.wincmd("p") -- back to the window you came from
+  else
+    vim.cmd("Neotree focus") -- open (if needed) and move cursor into the tree
+  end
+end, { desc = "Toggle focus: explorer <-> code" })
+
 -- In visual mode, paste over a selection WITHOUT clobbering your yank register.
 -- Normally pasting over text copies the deleted text; this keeps what you originally yanked.
 map("x", "<leader>p", [["_dP]], { desc = "Paste without yanking selection" })

@@ -22,7 +22,17 @@ return {
           preview = {
             treesitter = false,
           }
-        }
+        },
+        pickers = {
+          find_files = {
+            -- Show dotfiles (.env, .config, etc.) in the picker...
+            hidden = true,
+            -- ...but never list the .git/ internals.
+            -- Note: .gitignore is still respected by default (no_ignore = false),
+            -- so node_modules/, build artifacts, etc. stay hidden automatically.
+            file_ignore_patterns = { "%.git/" },
+          },
+        },
       })
       pcall(telescope.load_extension, "fzf")
 

@@ -17,14 +17,8 @@ source $(brew --prefix)/share/zsh-autosuggestions/zsh-autosuggestions.zsh
 source $(brew --prefix)/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
 source $(brew --prefix)/share/zsh-completions/zsh-completions.plugin.zsh 2>/dev/null || true
 
-# ── Completions ──────────────────────────────────────────────────
-autoload -U compinit && compinit
-
 # ── Tools ────────────────────────────────────────────────────────
 . "$HOME/.turso/env"
-
-# ── Zoxide (replaces z) ──────────────────────────────────────────
-eval "$(zoxide init zsh)"
 
 # ── fzf ──────────────────────────────────────────────────────────
 eval "$(fzf --zsh)"
@@ -39,12 +33,16 @@ export FZF_DEFAULT_OPTS="
   --color=border:#5c6370
 "
 
-# ── fzf ──────────────────────────────────────────────────────────
+# ── fzf-tab ──────────────────────────────────────────────────────────
 source ~/.fzf-tab/fzf-tab.plugin.zsh
 zstyle ':completion:*' list-colors ${(s.:.)LS_COLORS}
 zstyle ':fzf-tab:complete:cd:*' fzf-preview '/opt/homebrew/bin/eza --color=always --tree --icons --level=2 -- $realpath'
 zstyle ':fzf-tab:complete:cd:*' fzf-min-width 80
 zstyle ':fzf-tab:complete:*:*' fzf-preview '/opt/homebrew/bin/bat --color=always $realpath 2>/dev/null || '/opt/homebrew/bin/eza' --tree --icons $realpath'
+
+# ── Zoxide (init + omz/zsh-z-style `z` tab completion) ────────────
+# Sourced after compinit & fzf-tab so completion + preview work.
+source ~/.zsh_zoxide.zsh
 
 # ── Custom commands ───────────────────────────────────────────────
 if [[ -f ~/.custom_commands.sh ]]; then

@@ -19,9 +19,10 @@ return {
   {
     "stevearc/oil.nvim",
     dependencies = { "nvim-tree/nvim-web-devicons" }, -- file-type icons (needs a Nerd Font)
-    -- Load eagerly-ish: oil wants to register itself as the directory handler before
-    -- you open any directory, so we lazy-load only on the keymap + the Oil command.
-    cmd = "Oil",
+    -- Load at startup, not lazily: oil must register itself as the directory handler
+    -- BEFORE you open any directory. With netrw disabled (see config/options.lua),
+    -- this lets `nvim .` and `nvim somedir/` open in oil instead of the default explorer.
+    lazy = false,
     keys = {
       { "-", "<cmd>Oil<CR>", desc = "Open parent directory (oil)" },
       { "<leader>fo", "<cmd>Oil --float<CR>", desc = "Open oil in a floating window" },
