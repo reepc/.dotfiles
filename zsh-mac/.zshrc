@@ -45,12 +45,11 @@ zstyle ':fzf-tab:complete:cd:*' fzf-preview '/opt/homebrew/bin/eza --color=alway
 zstyle ':fzf-tab:complete:cd:*' fzf-min-width 80
 zstyle ':fzf-tab:complete:*:*' fzf-preview '/opt/homebrew/bin/bat --color=always $realpath 2>/dev/null || '/opt/homebrew/bin/eza' --tree --icons $realpath'
 
-# ── Float the menu (fixed-size centered popup, like nvim's <leader>ff) ─
-# fzf's --tmux makes a centered popup of a FIXED size (80% wide × 75% tall),
-# overriding fzf-tab's content-sized --height. Outside tmux fzf ignores --tmux
-# and falls back to the inline list automatically — no guard needed.
-# Format: center,<width>,<height> (use % for proportional, or cols/lines fixed).
-zstyle ':fzf-tab:*' fzf-flags --tmux=center,80%,75%
+# ── Inline completion menu ───────────────────────────────────────
+# No tmux popup. fzf-tab renders its default inline list right under the
+# prompt (with the previews configured above). This works identically inside
+# and outside tmux and on any tmux version — unlike fzf's --tmux popup, which
+# needs tmux >= 3.3 and on older tmux breaks completion (TAB leaks a newline).
 
 # ── Zoxide (init + omz/zsh-z-style `z` tab completion) ────────────
 # Sourced after compinit & fzf-tab so completion + preview work.
