@@ -25,13 +25,28 @@ return {
     },
 
     init = function()
-      -- On startup with NO file argument, try to restore this directory's session.
+      -- On startup, try to restore a directory's session. Two cases count as
+      -- "open this folder" (like clicking a folder in VSCode/Zed), and both restore:
+      --   * `nvim`            -> no args, restore the current working directory.
+      --   * `nvim .` / `nvim ~/proj` -> a single DIRECTORY arg; cd into it, then restore.
+      -- A file argument (`nvim foo.py`) is left alone: just that file, no restore.
       -- `load()` is a no-op when no saved session exists, so the alpha dashboard
       -- simply stays on screen in that case.
       vim.api.nvim_create_autocmd("VimEnter", {
         nested = true, -- allow the restored buffers to fire their own autocmds (LSP, etc.)
         callback = function()
-          if vim.fn.argc() ~= 0 then return end -- a file was passed; don't override it
+          local argc = vim.fn.argc()
+          if argc > 1 then return end -- multiple files passed; don't override them
+
+          if argc == 1 then
+            local arg = vim.fn.argv(0)
+            if vim.fn.isdirectory(arg) == 0 then return end -- it's a file, leave it
+            -- A directory was opened: make it the cwd so the session key matches,
+            -- and wipe the empty/netrw-style buffer nvim created for the dir arg.
+            vim.cmd.cd(arg)
+            vim.cmd("silent! %bwipeout!")
+          end
+
           local ok, persistence = pcall(require, "persistence")
           if ok then persistence.load() end
         end,
@@ -39,5 +54,6 @@ return {
     end,
   },
 }
--- Note: restore is keyed to your current working directory. Launch nvim from a
--- project's root (e.g. `cd ~/myproject && nvim`) to get that project's session back.
+-- Note: restore is keyed to the working directory. Either launch from the project
+-- root (`cd ~/myproject && nvim`) or pass it as a directory arg (`nvim ~/myproject`,
+-- `nvim .`) -- both resolve to the same session for that folder.

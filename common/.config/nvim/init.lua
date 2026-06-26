@@ -7,7 +7,7 @@
 vim.g.mapleader = " "
 vim.g.maplocalleader = " "
 
-require("config.options")   -- editor settings
-require("config.keymaps")   -- your key bindings
-require("config.lazy")      -- bootstraps lazy.nvim and loads everything in lua/plugins/
-vim.cmd.colorscheme("catppuccin") -- set the colorscheme after loading plugins
+require("config.options") -- editor settings
+require("config.keymaps") -- your key bindings
+require("config.lazy") -- bootstraps lazy.nvim and loads everything in lua/plugins/
+vim.cmd.colorscheme("onedark") -- set the colorscheme after loading plugins

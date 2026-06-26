@@ -9,110 +9,183 @@
 -- mason-lspconfig auto-enable them. The old setup_handlers pattern is deprecated.
 
 return {
-    {
-        "neovim/nvim-lspconfig",
-        dependencies = {
-            { "mason-org/mason.nvim", config = true },
-            "mason-org/mason-lspconfig.nvim",
-        },
-        config = function()
-            ---------------------------------------------------------------------------
-            -- Per-server settings via the native API.RRR
-            ---------------------------------------------------------------------------
+	{
+		"neovim/nvim-lspconfig",
+		dependencies = {
+			{ "mason-org/mason.nvim", config = true },
+			"mason-org/mason-lspconfig.nvim",
+		},
+		config = function()
+			---------------------------------------------------------------------------
+			-- Diagnostic gutter signs: swap the default E/W/I/H letters for Nerd Font
+			-- icons (needs a Nerd Font in the terminal — we set have_nerd_font = true).
+			---------------------------------------------------------------------------
+			vim.diagnostic.config({
+				signs = {
+					text = {
+						[vim.diagnostic.severity.ERROR] = "",
+						[vim.diagnostic.severity.WARN] = "",
+						[vim.diagnostic.severity.INFO] = "",
+						[vim.diagnostic.severity.HINT] = "",
+					},
+				},
+				-- Kill the inline message at the end of the line — we show it in a float
+				-- (the CursorHold autocmd below) instead, so it reads like a hover popup.
+				virtual_text = false,
+				-- Keep the squiggly underline so you can still SEE where problems are.
+				underline = true,
+				float = {
+					border = "rounded", -- match the gd/gr/hover popups
+					source = true, -- show which linter/server raised it (ruff, basedpyright…)
+					focusable = false, -- don't steal focus; it dismisses as you move
+				},
+			})
 
-            -- Lua: teach it the `vim` global so it stops warning in your config files.
-            vim.lsp.config("lua_ls", {
-                settings = {
-                    Lua = {
-                        runtime = { version = "LuaJIT" },
-                        diagnostics = { globals = { "vim" } },
-                    },
-                },
-            })
+			---------------------------------------------------------------------------
+			-- Auto-popup: when the cursor rests on a line (updatetime = 250ms, set in
+			-- options.lua), show that line's diagnostics in a float. Moving the cursor
+			-- dismisses it automatically. <leader>e still opens it on demand.
+			---------------------------------------------------------------------------
+			vim.api.nvim_create_autocmd("CursorHold", {
+				callback = function()
+					vim.diagnostic.open_float(nil, { scope = "cursor" })
+				end,
+			})
 
-            -- Python (basedpyright) — mirrored from your VSCode settings.json:
-            --   python.analysis.typeCheckingMode            -> "basic"
-            --   python.analysis.autoImportCompletions       -> true
-            --   python.analysis.useLibraryCodeForTypes      -> true
-            --   python.analysis.inlayHints.functionReturnTypes -> true (only this hint,
-            --     matching your config; parameter/variable hints stay off)
-            --
-            -- NOTE: basedpyright resolves imports against whatever Python interpreter is
-            -- active when nvim launches. Activate your conda env BEFORE starting nvim
-            -- (or launch from within it). There is no "interpreter path" setting here —
-            -- that VSCode line (python.defaultInterpreterPath) has no LSP equivalent.
-            vim.lsp.config("basedpyright", {
-                settings = {
-                    basedpyright = {
-                        analysis = {
-                            typeCheckingMode = "basic",
-                            autoImportCompletions = true,
-                            useLibraryCodeForTypes = true,
-                            inlayHints = {
-                                callArgumentNames = false,
-                                variableTypes = false,
-                                functionReturnTypes = true,
-                                genericTypes = false,
-                            },
-                        },
-                    },
-                },
-            })
+			---------------------------------------------------------------------------
+			-- Per-server settings via the native API.RRR
+			---------------------------------------------------------------------------
 
-            vim.lsp.config("ruff", {
-                init_options = {
-                    settings = {
-                        lineLength = 120,        -- raise the ceiling, OR…
-                        lint = {
-                            ignore = { "E501" }, -- …silence the rule entirely
-                        },
-                    },
-                },
-            })
+			-- Lua: teach it the `vim` global so it stops warning in your config files.
+			vim.lsp.config("lua_ls", {
+				settings = {
+					Lua = {
+						runtime = { version = "LuaJIT" },
+						diagnostics = { globals = { "vim" } },
+					},
+				},
+			})
 
-            ---------------------------------------------------------------------------
-            -- Install + auto-enable servers for your stack.
-            ---------------------------------------------------------------------------
-            require("mason-lspconfig").setup({
-                ensure_installed = {
-                    "rust_analyzer", -- Rust (clippy lint is bundled in)
-                    "clangd",        -- C / C++
-                    "ts_ls",         -- TypeScript / TSX / JS
-                    "basedpyright",  -- Python (semantic intelligence + type checking)
-                    "ruff",          -- Python linting/formatting (delivered as an LSP server)
-                    "lua_ls",        -- Lua (for editing this config)
-                    "bashls",        -- shell scripts
-                    -- "eslint",      -- uncomment for TS/React ESLint rules (you do React;
-                    --   add when you want lint rules firing in .tsx files)
-                },
-                -- automatic_enable defaults to true: installed servers start automatically.
-            })
+			-- Python (basedpyright) — mirrored from your VSCode settings.json:
+			--   python.analysis.typeCheckingMode            -> "basic"
+			--   python.analysis.autoImportCompletions       -> true
+			--   python.analysis.useLibraryCodeForTypes      -> true
+			--   python.analysis.inlayHints.functionReturnTypes -> true (only this hint,
+			--     matching your config; parameter/variable hints stay off)
+			--
+			-- NOTE: basedpyright resolves imports against whatever Python interpreter is
+			-- active when nvim launches. Activate your conda env BEFORE starting nvim
+			-- (or launch from within it). There is no "interpreter path" setting here —
+			-- that VSCode line (python.defaultInterpreterPath) has no LSP equivalent.
+			vim.lsp.config("basedpyright", {
+				settings = {
+					basedpyright = {
+						analysis = {
+							typeCheckingMode = "basic",
+							autoImportCompletions = true,
+							useLibraryCodeForTypes = true,
+							inlayHints = {
+								callArgumentNames = false,
+								variableTypes = false,
+								functionReturnTypes = true,
+								genericTypes = false,
+							},
+						},
+					},
+				},
+			})
 
-            ---------------------------------------------------------------------------
-            -- LSP keymaps — only active in buffers where a server has attached.
-            ---------------------------------------------------------------------------
-            vim.api.nvim_create_autocmd("LspAttach", {
-                callback = function(event)
-                    local map = function(keys, fn, desc)
-                        vim.keymap.set("n", keys, fn, { buffer = event.buf, desc = "LSP: " .. desc })
-                    end
-                    map("gd", require('telescope.builtin').lsp_definitions, "Go to definition")
-                    map("gr", require('telescope.builtin').lsp_references, "Find references")
-                    map("K", vim.lsp.buf.hover, "Hover docs")
-                    map("<leader>rn", vim.lsp.buf.rename, "Rename symbol")
-                    map("<leader>ca", vim.lsp.buf.code_action, "Code action")
-                    map("<leader>e", vim.diagnostic.open_float, "Show line diagnostics")
-                    map("[d", function() vim.diagnostic.jump({ count = -1 }) end, "Previous diagnostic")
-                    map("]d", function() vim.diagnostic.jump({ count = 1 }) end, "Next diagnostic")
+			vim.lsp.config("ruff", {
+				capabilities = { offsetEncoding = "utf-16" },
+				init_options = {
+					settings = {
+						-- By default ruff is "filesystemFirst": a project's pyproject.toml /
+						-- ruff.toml WINS over anything set here, so lineLength below is ignored
+						-- when a project config exists (that's why you still saw the 79 limit).
+						-- "editorFirst" makes these editor settings take priority over the file;
+						-- use "editorOnly" to ignore project config files completely.
+						configurationPreference = "editorFirst",
+						lineLength = 120, -- raise the ceiling, OR…
+						lint = {
+							ignore = { "E501" }, -- …silence the rule entirely
+						},
+					},
+				},
+			})
 
-                    -- Inlay hints: VSCode showed function return types inline. This turns the
-                    -- nvim equivalent ON for any server that supports it (basedpyright does).
-                    local client = vim.lsp.get_client_by_id(event.data.client_id)
-                    if client and client:supports_method("textDocument/inlayHint") then
-                        vim.lsp.inlay_hint.enable(true, { bufnr = event.buf })
-                    end
-                end,
-            })
-        end,
-    },
+			---------------------------------------------------------------------------
+			-- Install + auto-enable servers for your stack.
+			---------------------------------------------------------------------------
+			require("mason-lspconfig").setup({
+				ensure_installed = {
+					"rust_analyzer", -- Rust (clippy lint is bundled in)
+					"clangd", -- C / C++
+					"ts_ls", -- TypeScript / TSX / JS
+					"basedpyright", -- Python (semantic intelligence + type checking)
+					"ruff", -- Python linting/formatting (delivered as an LSP server)
+					"lua_ls", -- Lua (for editing this config)
+					"bashls", -- shell scripts
+					-- "eslint",      -- uncomment for TS/React ESLint rules (you do React;
+					--   add when you want lint rules firing in .tsx files)
+				},
+				-- automatic_enable defaults to true: installed servers start automatically.
+			})
+
+			---------------------------------------------------------------------------
+			-- LSP keymaps — only active in buffers where a server has attached.
+			---------------------------------------------------------------------------
+			vim.api.nvim_create_autocmd("LspAttach", {
+				callback = function(event)
+					local map = function(keys, fn, desc)
+						vim.keymap.set("n", keys, fn, { buffer = event.buf, desc = "LSP: " .. desc })
+					end
+					map("gd", require("telescope.builtin").lsp_definitions, "Go to definition")
+					map("gr", require("telescope.builtin").lsp_references, "Find references")
+					-- Overrides nvim 0.11's built-in `gri` (which uses the quickfix list)
+					-- with the Telescope picker, matching the gd/gr popup. Shows subclass
+					-- overrides / concrete implementations of the symbol under the cursor.
+					map("gri", require("telescope.builtin").lsp_implementations, "Go to implementations")
+					map("K", vim.lsp.buf.hover, "Hover docs")
+					map("<leader>rn", vim.lsp.buf.rename, "Rename symbol")
+					map("<leader>ca", vim.lsp.buf.code_action, "Code action")
+					map("<leader>e", vim.diagnostic.open_float, "Show line diagnostics")
+					-- Copy the current line's diagnostic message(s) to the system clipboard.
+					map("<leader>cd", function()
+						local lnum = vim.api.nvim_win_get_cursor(0)[1] - 1
+						local diags = vim.diagnostic.get(0, { lnum = lnum })
+						if vim.tbl_isempty(diags) then
+							vim.notify("No diagnostics on this line", vim.log.levels.INFO)
+							return
+						end
+						local msgs = {}
+						for _, d in ipairs(diags) do
+							table.insert(msgs, d.message)
+						end
+						local text = table.concat(msgs, "\n")
+						vim.fn.setreg("+", text) -- "+ = system clipboard
+						vim.notify("Copied diagnostic:\n" .. text)
+					end, "Copy line diagnostic(s)")
+					-- Browse ALL diagnostics in the same centered Telescope popup as gd/gr.
+					-- <leader>fd = file/buffer only; <leader>fD = whole workspace.
+					map("<leader>fd", function()
+						require("telescope.builtin").diagnostics({ bufnr = 0 })
+					end, "Diagnostics (buffer popup)")
+					map("<leader>fD", require("telescope.builtin").diagnostics, "Diagnostics (workspace popup)")
+					map("[d", function()
+						vim.diagnostic.jump({ count = -1 })
+					end, "Previous diagnostic")
+					map("]d", function()
+						vim.diagnostic.jump({ count = 1 })
+					end, "Next diagnostic")
+
+					-- Inlay hints: VSCode showed function return types inline. This turns the
+					-- nvim equivalent ON for any server that supports it (basedpyright does).
+					local client = vim.lsp.get_client_by_id(event.data.client_id)
+					if client and client:supports_method("textDocument/inlayHint") then
+						vim.lsp.inlay_hint.enable(true, { bufnr = event.buf })
+					end
+				end,
+			})
+		end,
+	},
 }

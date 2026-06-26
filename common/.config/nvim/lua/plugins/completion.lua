@@ -14,9 +14,8 @@ return {
     opts = {
       -- `opts` is shorthand: lazy.nvim passes this table to require("blink.cmp").setup(opts).
       keymap = {
-        preset = "default", -- <C-y> to accept, <C-n>/<C-p> to cycle, <C-space> to open
-        -- If you want Tab to accept (VSCode-like), change the preset to "enter" or
-        -- define custom keys. Ask me and I'll wire your preferred style.
+        preset = "super-tab", -- <Tab> to accept, <Up>/<Down> or <C-p>/<C-n> to move, <C-space> to open
+        -- <Tab> also jumps forward through snippet placeholders; <S-Tab> jumps back.
       },
       appearance = { nerd_font_variant = "mono" },
       sources = {
@@ -27,9 +26,20 @@ return {
       },
       -- Command-line completion: when you press `:` and start typing a command,
       -- show the same dropdown automatically (instead of only on <Tab>).
-      -- Suggests commands, their arguments, file paths, etc. Same keys as above:
-      -- <C-n>/<C-p> to move, <C-y> to accept.
+      -- Suggests commands, their arguments, file paths, etc.
       cmdline = {
+        -- Keys for the `:` popup. We deliberately do NOT inherit super-tab here,
+        -- because that would steal <Up>/<Down> for menu selection — and on the
+        -- command line those arrows are Vim's command HISTORY (recall previous
+        -- `:` commands), which we want to keep.
+        --   <Tab>          accept the suggestion (selects the first item if none is)
+        --   <C-n> / <C-p>  move down/up through the menu (from the cmdline preset)
+        --   <Up> / <Down>  left unbound -> native command-line history
+        --   <C-space>      open the menu manually
+        keymap = {
+          preset = "cmdline",
+          ["<Tab>"] = { "select_and_accept", "fallback" },
+        },
         completion = {
           menu = { auto_show = true },
         },

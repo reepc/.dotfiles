@@ -7,6 +7,12 @@ return {
       "rcarriga/nvim-notify",   -- optional: nice notification popups (falls back to mini if absent)
     },
     opts = {
+      lsp = {
+        -- basedpyright re-analyzes on every keystroke and fires $/progress reports.
+        -- noice renders those in the bottom-right corner — turn that stream off so
+        -- typing doesn't spawn a popup each time. (Hover/signature popups stay on.)
+        progress = { enabled = false },
+      },
       presets = {
         -- These presets are the easy way to get common behaviors without hand-config.
         command_palette = true,      -- cmdline + completion together, centered (the "palette" look)
