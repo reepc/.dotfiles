@@ -1,13 +1,7 @@
 
-# ── Environment ──────────────────────────────────────────────────
-export EDITOR="nvim"
-export CUDA_DEVICE_ORDER=PCI_BUS_ID
-
-# ── PATH (single source of truth, deduplicated) ──────────────────
-typeset -U PATH
-export PATH="$HOME/.local/bin:$HOME/bin:/usr/local/bin:$PATH"
-export PATH="/usr/local/cuda/bin:$PATH"
-# export LD_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu:/usr/local/cuda/lib64:$LD_LIBRARY_PATH
+# ── Environment & PATH ───────────────────────────────────────────
+# Env vars and the base PATH now live in ~/.zshenv so they apply to EVERY
+# shell, including the non-interactive ones tmux popups use.
 
 fpath=("$HOME/.zsh-completions/src" $fpath)
 
@@ -42,12 +36,22 @@ zstyle ':fzf-tab:complete:cd:*' fzf-preview 'eza --color=always --tree --icons -
 zstyle ':fzf-tab:complete:cd:*' fzf-min-width 80
 zstyle ':fzf-tab:complete:*:*' fzf-preview 'bat --color=always $realpath 2>/dev/null || eza --tree --icons $realpath'
 
+# ── Float the menu (fixed-size centered popup, like nvim's <leader>ff) ─
+# fzf's --tmux makes a centered popup of a FIXED size (80% wide × 75% tall),
+# overriding fzf-tab's content-sized --height. Outside tmux fzf ignores --tmux
+# and falls back to the inline list automatically — no guard needed.
+# Format: center,<width>,<height> (use % for proportional, or cols/lines fixed).
+zstyle ':fzf-tab:*' fzf-flags --tmux=center,80%,75%
+
 # ── Zoxide (init + omz/zsh-z-style `z` tab completion) ────────────
 # Sourced after compinit & fzf-tab so completion + preview work.
 source ~/.zsh_zoxide.zsh
 
 # ── Custom commands ───────────────────────────────────────────────
 [[ -f ~/.custom_commands.sh ]] && source ~/.custom_commands.sh
+
+# ── Aliases ───────────────────────────────────────────────────────
+[[ -f ~/.zsh_alias.zsh ]] && source ~/.zsh_alias.zsh
 
 function show_custom_commands {
   echo "Custom Commands: "
@@ -56,17 +60,11 @@ function show_custom_commands {
   echo "---------------------------------"
   echo
   echo "------------ Aliases ------------"
-  grep -E '^alias [a-zA-Z0-9_]+=' ~/.custom_commands.sh | while read -r line; do
+  grep -E '^alias [a-zA-Z0-9_-]+=' ~/.zsh_alias.zsh | while read -r line; do
     echo "  $line"
   done
   echo "---------------------------------"
 }
-
-# ── Aliases (eza) ────────────────────────────────────────────────
-alias ls="eza --icons --group-directories-first"
-alias ll="eza -l --icons --group-directories-first --git"
-alias la="eza -la --icons --group-directories-first --git"
-alias lt="eza --tree --icons --level=2"
 
 # ── NVM ──────────────────────────────────────────────────────────
 export NVM_DIR="$HOME/.nvm"

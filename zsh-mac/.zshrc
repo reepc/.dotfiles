@@ -1,14 +1,19 @@
-# ── Environment ──────────────────────────────────────────────────
-export EDITOR="nvim"
-export MECABRC=/opt/homebrew/etc/mecabrc
-
-# ── PATH (single source of truth, deduplicated) ──────────────────
-typeset -U PATH
-[[ ":$PATH:" != *":$HOME/.console-ninja/.bin:"* ]] && export PATH="$HOME/.console-ninja/.bin:$PATH"
-[[ ":$PATH:" != *":$HOME/.local/bin:"*           ]] && export PATH="$HOME/.local/bin:$PATH"
-[[ ":$PATH:" != *":/opt/homebrew/bin:"*          ]] && export PATH="/opt/homebrew/bin:/opt/homebrew/sbin:$PATH"
-export PATH="/opt/homebrew/opt/openjdk/bin:$PATH"
-export PATH="/opt/homebrew/opt/llvm/bin:$PATH"
+# ── PATH (interactive priorities) ────────────────────────────────
+# Environment vars and the base PATH (system + cargo + Homebrew) live in
+# ~/.zshenv so they apply to EVERY shell, including the non-interactive ones
+# tmux popups use. Here we just move the interactive-priority dirs to the
+# FRONT so Homebrew tools win over the system ones in your interactive shell.
+typeset -U path PATH
+path=(
+  /opt/homebrew/opt/llvm/bin
+  /opt/homebrew/opt/openjdk/bin
+  /opt/homebrew/bin
+  /opt/homebrew/sbin
+  $HOME/.local/bin
+  $HOME/.console-ninja/.bin
+  $path
+)
+export PATH
 
 source ~/.zsh_completions.zsh
 
@@ -40,6 +45,13 @@ zstyle ':fzf-tab:complete:cd:*' fzf-preview '/opt/homebrew/bin/eza --color=alway
 zstyle ':fzf-tab:complete:cd:*' fzf-min-width 80
 zstyle ':fzf-tab:complete:*:*' fzf-preview '/opt/homebrew/bin/bat --color=always $realpath 2>/dev/null || '/opt/homebrew/bin/eza' --tree --icons $realpath'
 
+# ── Float the menu (fixed-size centered popup, like nvim's <leader>ff) ─
+# fzf's --tmux makes a centered popup of a FIXED size (80% wide × 75% tall),
+# overriding fzf-tab's content-sized --height. Outside tmux fzf ignores --tmux
+# and falls back to the inline list automatically — no guard needed.
+# Format: center,<width>,<height> (use % for proportional, or cols/lines fixed).
+zstyle ':fzf-tab:*' fzf-flags --tmux=center,80%,75%
+
 # ── Zoxide (init + omz/zsh-z-style `z` tab completion) ────────────
 # Sourced after compinit & fzf-tab so completion + preview work.
 source ~/.zsh_zoxide.zsh
@@ -49,6 +61,9 @@ if [[ -f ~/.custom_commands.sh ]]; then
   . ~/.custom_commands.sh
 fi
 
+# ── Aliases ───────────────────────────────────────────────────────
+[[ -f ~/.zsh_alias.zsh ]] && source ~/.zsh_alias.zsh
+
 function show_custom_commands {
   echo "Custom Commands: "
   echo "----------- Functions -----------"
@@ -56,17 +71,11 @@ function show_custom_commands {
   echo "---------------------------------"
   echo
   echo "------------ Aliases ------------"
-  grep -E '^alias [a-zA-Z0-9_]+=' ~/.custom_commands.sh | while read -r line; do
+  grep -E '^alias [a-zA-Z0-9_-]+=' ~/.zsh_alias.zsh | while read -r line; do
     echo "  $line"
   done
   echo "---------------------------------"
 }
-
-# ── Aliases (eza) ────────────────────────────────────────────────
-alias ls="eza --icons --group-directories-first"
-alias ll="eza -l --icons --group-directories-first --git"
-alias la="eza -la --icons --group-directories-first --git"
-alias lt="eza --tree --icons --level=2"
 
 [ -f $HOME/.zsh_keybindings.sh ] && source "$HOME/.zsh_keybindings.sh"
 
