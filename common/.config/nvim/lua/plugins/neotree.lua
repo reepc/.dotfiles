@@ -21,6 +21,12 @@ return {
       filesystem = {
         follow_current_file = { enabled = true }, -- highlight the file you're editing
         use_libuv_file_watcher = true,            -- auto-refresh when files change on disk
+        filtered_items = {
+          visible = true,          -- show filtered items instead of hiding them
+          hide_dotfiles = false,   -- show files/dirs starting with `.` (.config, .gitignore, …)
+          hide_gitignored = false, -- show git-ignored files too
+          hide_hidden = false,     -- (Windows) show OS-hidden files
+        },
       },
       window = { width = 32 },
     },
