@@ -139,12 +139,12 @@ return {
 					local map = function(keys, fn, desc)
 						vim.keymap.set("n", keys, fn, { buffer = event.buf, desc = "LSP: " .. desc })
 					end
-					map("gd", require("telescope.builtin").lsp_definitions, "Go to definition")
-					map("gr", require("telescope.builtin").lsp_references, "Find references")
+					map("gd", require("fzf-lua").lsp_definitions, "Go to definition")
+					map("gr", require("fzf-lua").lsp_references, "Find references")
 					-- Overrides nvim 0.11's built-in `gri` (which uses the quickfix list)
-					-- with the Telescope picker, matching the gd/gr popup. Shows subclass
+					-- with the fzf-lua picker, matching the gd/gr popup. Shows subclass
 					-- overrides / concrete implementations of the symbol under the cursor.
-					map("gri", require("telescope.builtin").lsp_implementations, "Go to implementations")
+					map("gri", require("fzf-lua").lsp_implementations, "Go to implementations")
 					map("K", vim.lsp.buf.hover, "Hover docs")
 					map("<leader>rn", vim.lsp.buf.rename, "Rename symbol")
 					map("<leader>ca", vim.lsp.buf.code_action, "Code action")
@@ -165,12 +165,12 @@ return {
 						vim.fn.setreg("+", text) -- "+ = system clipboard
 						vim.notify("Copied diagnostic:\n" .. text)
 					end, "Copy line diagnostic(s)")
-					-- Browse ALL diagnostics in the same centered Telescope popup as gd/gr.
+					-- Browse ALL diagnostics in the same centered fzf-lua popup as gd/gr.
 					-- <leader>fd = file/buffer only; <leader>fD = whole workspace.
 					map("<leader>fd", function()
-						require("telescope.builtin").diagnostics({ bufnr = 0 })
+						require("fzf-lua").diagnostics_document()
 					end, "Diagnostics (buffer popup)")
-					map("<leader>fD", require("telescope.builtin").diagnostics, "Diagnostics (workspace popup)")
+					map("<leader>fD", require("fzf-lua").diagnostics_workspace, "Diagnostics (workspace popup)")
 					map("[d", function()
 						vim.diagnostic.jump({ count = -1 })
 					end, "Previous diagnostic")
