@@ -23,8 +23,9 @@ opt.tabstop = 4 -- a tab character displays as 4 spaces wide
 opt.shiftwidth = 4 -- one indent level = 4 spaces
 opt.expandtab = true -- pressing Tab inserts spaces, not a tab character
 opt.smartindent = true -- auto-indent new lines based on context
--- Note: for JS/TS/React, 2 spaces is the community norm. Treesitter + the LSP
--- formatter usually handle per-language indent; we can add filetype overrides later.
+-- This 4-space default applies everywhere except the per-language overrides in
+-- ftplugin/<ft>.lua (lua, JS/TS/React, json, yaml, html, css, markdown, sh use 2),
+-- which call the helper in lua/config/indent.lua.
 
 -- === Search ===
 opt.ignorecase = true -- searching is case-insensitive...
