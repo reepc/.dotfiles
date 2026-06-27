@@ -45,6 +45,11 @@ map("n", "<leader>E", function()
 	end
 end, { desc = "Toggle focus: explorer <-> code" })
 
+-- Indent / outdent the selection with Tab / Shift-Tab (VSCode muscle memory).
+-- `gv` reselects the same block afterward so you can press Tab repeatedly.
+map("v", "<Tab>", ">gv", { desc = "Indent selection" })
+map("v", "<S-Tab>", "<gv", { desc = "Outdent selection" })
+
 -- In visual mode, paste over a selection WITHOUT clobbering your yank register.
 -- Normally pasting over text copies the deleted text; this keeps what you originally yanked.
 map("x", "<leader>p", [["_dP]], { desc = "Paste without yanking selection" })
