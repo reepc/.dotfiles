@@ -40,3 +40,17 @@ bindkey "^[^?"  _backward_kill_word_smart
 # bindkey "^[[1;3D" _backward_word_smart    # Option+Left
 # bindkey "^[[1;3C" _forward_word_smart     # Option+Right
 # bindkey "^[[1;3A" _backward_kill_word_smart  # Option+Backspace (some terminals)
+
+# ── tmux-sessionizer (Ctrl-f) ─────────────────────────────────────
+# Fuzzy-pick a project and jump into its tmux session, from a bare shell
+# (the counterpart to `prefix o` inside tmux).
+#
+# This uses `bindkey -s` (a macro), NOT a zle widget, on purpose: the script
+# runs `tmux attach`/`new-session`, which must take over the terminal. A zle
+# widget still owns the tty when it runs, so the attach fails and no session
+# survives. The macro instead clears the line (^U), types the command, and
+# presses Enter (^M) so it runs as a normal foreground command.
+#
+# NOTE: this overrides the default Ctrl-f (forward-char) — arrow keys still
+# move the cursor. Change the key below if you want Ctrl-f back.
+bindkey -s "^f" "^Utmux-sessionizer^M"

@@ -1,0 +1,73 @@
+#!/usr/bin/env bash
+# tmux-sessionizer
+# =============================================================================
+# Fuzzy-pick a project directory and jump into a tmux session for it, creating
+# the session on first use and switching to it on every visit after. You stop
+# managing sessions by hand — you think in *directories*, each gets its own
+# session transparently.
+#
+# Usage:
+#   tmux-sessionizer            # fzf over the search roots below
+#   tmux-sessionizer ~/some/dir # skip fzf, target this dir directly
+#
+# Bound to `prefix o` (inside tmux, opens in a popup) and `Ctrl-f` (in zsh,
+# for when you're outside tmux). See tmux.conf and .zsh_keybindings.sh.
+# =============================================================================
+
+# A tmux popup runs a NON-login shell and inherits only the tmux server's PATH,
+# which often lacks Homebrew (`fzf`) and ~/.local/bin. Without this the popup
+# can't find fzf, fzf never draws, and the popup flashes shut instantly. Prepend
+# the usual bin dirs so the script works no matter how tmux itself was launched.
+export PATH="$HOME/.local/bin:/opt/homebrew/bin:/usr/local/bin:$PATH"
+
+# Directories to offer. Each is scanned one level deep (its immediate children
+# become candidates); the root itself is also included so e.g. ~/.dotfiles is
+# selectable directly. Edit this list to taste.
+SEARCH_ROOTS=(
+    "$HOME/projects"
+    "$HOME/.dotfiles"
+    "$HOME/.config"
+)
+
+if [[ $# -eq 1 ]]; then
+    selected="$1"
+else
+    # Build the candidate list: each root, plus its immediate subdirectories.
+    candidates=$(
+        for root in "${SEARCH_ROOTS[@]}"; do
+            [[ -d "$root" ]] || continue
+            printf '%s\n' "$root"
+            find "$root" -mindepth 1 -maxdepth 1 -type d 2>/dev/null
+        done
+    )
+    # No --height here: inside a tmux popup the window is already the right size,
+    # and fzf's --height mode can misbehave there. Let fzf use the full popup.
+    selected=$(printf '%s\n' "$candidates" | fzf --prompt="session> " --reverse)
+fi
+
+# Nothing picked (Esc / Ctrl-c) -> bail quietly.
+[[ -z "$selected" ]] && exit 0
+
+# tmux session names can't contain '.' or ':'; spaces are awkward too.
+selected_name=$(basename "$selected" | tr '.: ' '___')
+tmux_running=$(pgrep tmux)
+
+# Case 1: outside tmux AND no server running yet -> create + attach in one go.
+if [[ -z "$TMUX" && -z "$tmux_running" ]]; then
+    tmux new-session -s "$selected_name" -c "$selected"
+    exit 0
+fi
+
+# Create the session detached if it doesn't already exist (idempotent: a repeat
+# pick of the same project just reuses it instead of erroring).
+if ! tmux has-session -t="$selected_name" 2>/dev/null; then
+    tmux new-session -ds "$selected_name" -c "$selected"
+fi
+
+# Case 2: outside tmux but a server exists -> attach.
+# Case 3: already inside tmux -> switch (can't nest attach).
+if [[ -z "$TMUX" ]]; then
+    tmux attach -t "$selected_name"
+else
+    tmux switch-client -t "$selected_name"
+fi
