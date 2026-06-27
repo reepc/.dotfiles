@@ -76,4 +76,12 @@ opt.splitbelow = true -- horizontal splits open below
 -- === Timing ===
 opt.updatetime = 250 -- faster response for diagnostics/hover (default 4000ms is sluggish)
 opt.timeoutlen = 400 -- how long to wait for a multi-key mapping (e.g. leader sequences)
+opt.ttimeoutlen = 10 -- how long to wait for a key CODE (e.g. the bytes after <Esc>).
+-- This is the one that makes Esc feel instant — default 50ms adds a noticeable
+-- lag leaving insert mode. Distinct from timeoutlen above (mappings vs raw keycodes).
+
+-- NOTE: deliberately NOT setting `lazyredraw` here. It's the classic "make Vim
+-- feel faster" tweak, but it suppresses redraws mid-command, which makes the
+-- smooth-scroll and cursor-trail animations (neoscroll / smear-cursor) stutter.
+-- Modern Neovim's renderer is fast enough that lazyredraw mostly just breaks UI.
 

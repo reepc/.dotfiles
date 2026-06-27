@@ -25,10 +25,9 @@ map("n", "<C-l>", "<C-w>l", { desc = "Go to right window" })
 map("v", "J", ":m '>+1<CR>gv=gv", { desc = "Move selection down" })
 map("v", "K", ":m '<-2<CR>gv=gv", { desc = "Move selection up" })
 
--- Keep cursor centered when jumping half-pages and through search results.
--- Small quality-of-life thing — your eyes don't lose the cursor.
-map("n", "<C-d>", "<C-d>zz", { desc = "Half-page down (centered)" })
-map("n", "<C-u>", "<C-u>zz", { desc = "Half-page up (centered)" })
+-- Keep cursor centered when jumping through search results so your eyes don't
+-- lose it. (Half-page <C-d>/<C-u> centering is handled by neoscroll.nvim now —
+-- it keeps the cursor at the same screen row while it animates the scroll.)
 map("n", "n", "nzzzv", { desc = "Next search result (centered)" })
 map("n", "N", "Nzzzv", { desc = "Prev search result (centered)" })
 
