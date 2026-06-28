@@ -82,7 +82,7 @@ return {
 					basedpyright = {
 						analysis = {
 							typeCheckingMode = "basic",
-							autoImportCompletions = true,
+							autoImportCompletions = false,
 							useLibraryCodeForTypes = true,
 							inlayHints = {
 								callArgumentNames = false,
