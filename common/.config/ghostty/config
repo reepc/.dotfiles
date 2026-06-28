@@ -1,0 +1,37 @@
+# === Remote ===
+shell-integration-features = ssh-terminfo,ssh-env, no-cursor
+
+# === Font ===
+font-family = "CaskaydiaMono Nerd Font Mono"
+font-size = 14
+font-thicken=true
+
+# === Styling ===
+theme = "Atom One Dark"
+background = #282c34
+window-padding-x = 10
+window-padding-y = 10
+# background-opacity = 0.90
+
+
+# === Windows ===
+window-new-tab-position = end
+window-save-state = always
+
+
+# === Clipboard ===
+copy-on-select = clipboard
+
+# === Cursor ===
+cursor-style = block
+
+# === Cursor smear (GPU shader) ===
+# Terminal-level animated cursor trail (Neovide-like), rendered locally by the
+# GPU — so it works in the shell, any TUI, AND over SSH. Replaces the in-nvim
+# smear-cursor.nvim plugin (now disabled when running in Ghostty).
+# Path is relative to this config file. Tune the trail in the shader's
+# CONFIGURATION block (DURATION / TRAIL_SIZE) at the top of the .glsl.
+custom-shader = shaders/cursor_warp.glsl
+# `true` animates only while the cursor is moving (battery-friendly). If the
+# trail ever looks choppy or doesn't animate, change this to `always`.
+custom-shader-animation = true

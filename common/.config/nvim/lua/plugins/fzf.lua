@@ -21,6 +21,45 @@ return {
 			},
 		},
 
+		-- LSP pickers (gd/gr/gri) only encode file:line:col, so the preview would
+		-- normally highlight a single character at the start of the word. We re-derive
+		-- the word's end column from the previewed buffer and stash it as `end_col` so
+		-- fzf-lua highlights the whole identifier (like a grep match).
+		config = function(_, opts)
+			local fzf = require("fzf-lua")
+			fzf.setup(opts)
+
+			local previewer = require("fzf-lua.previewer.builtin")
+			local orig_set_cursor_hl = previewer.buffer_or_file.set_cursor_hl
+			previewer.buffer_or_file.set_cursor_hl = function(self, entry)
+				if
+					entry
+					and entry.line
+					and entry.line > 0
+					and entry.col
+					and entry.col > 0
+					and not entry.end_col
+					and self.preview_bufnr
+				then
+					local line = vim.api.nvim_buf_get_lines(
+						self.preview_bufnr,
+						entry.line - 1,
+						entry.line,
+						false
+					)[1]
+					if line then
+						-- Find the identifier that starts exactly at the cursor column.
+						local s, e = line:find("[%w_]+", entry.col)
+						if s == entry.col and e then
+							entry.end_col = e + 1 -- previewer maps this to an exclusive range
+							entry.hlgroup = "FzfLuaSearch" -- match the grep word-highlight look
+						end
+					end
+				end
+				return orig_set_cursor_hl(self, entry)
+			end
+		end,
+
 		keys = {
 			{
 				"<leader>ff",

@@ -82,6 +82,8 @@ opt.ttimeoutlen = 10 -- how long to wait for a key CODE (e.g. the bytes after <E
 
 -- NOTE: deliberately NOT setting `lazyredraw` here. It's the classic "make Vim
 -- feel faster" tweak, but it suppresses redraws mid-command, which makes the
--- smooth-scroll and cursor-trail animations (neoscroll / smear-cursor) stutter.
--- Modern Neovim's renderer is fast enough that lazyredraw mostly just breaks UI.
+-- smooth-scroll animation (neoscroll) stutter. The cursor trail is now handled
+-- at the terminal level by Ghostty's custom-shader (see ~/.config/ghostty), not
+-- by a Neovim plugin. Modern Neovim's renderer is fast enough that lazyredraw
+-- mostly just breaks UI.
 
