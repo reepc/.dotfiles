@@ -93,8 +93,8 @@ return {
 							useLibraryCodeForTypes = true,
 							inlayHints = {
 								callArgumentNames = false,
-								variableTypes = false,
-								functionReturnTypes = true,
+								variableTypes = true, -- `self.x: SomeType` inline annotations
+								functionReturnTypes = true, -- `-> ReturnType` on def lines
 								genericTypes = false,
 							},
 						},
@@ -208,12 +208,23 @@ return {
 						vim.diagnostic.jump({ count = 1 })
 					end, "Next diagnostic")
 
-					-- Inlay hints: VSCode showed function return types inline. This turns the
-					-- nvim equivalent ON for any server that supports it (basedpyright does).
+					-- Inlay hints (VSCode-style inline types) — ON by default, toggle with
+					-- <leader>uh. ty's inlay hints are buggy over SSH with multibyte (CJK)
+					-- files — they land at columns past end-of-line and the renderer spams
+					--   inlay_hint.lua: Invalid 'col': out of range (nvim_buf_set_extmark)
+					-- so we drop ty's inlay-hint capability and let ONLY basedpyright's
+					-- well-positioned hints render. Which hint categories show is controlled
+					-- by basedpyright's inlayHints settings above (variable + return types).
 					local client = vim.lsp.get_client_by_id(event.data.client_id)
+					if client and client.name == "ty" then
+						client.server_capabilities.inlayHintProvider = nil
+					end
 					if client and client:supports_method("textDocument/inlayHint") then
 						vim.lsp.inlay_hint.enable(true, { bufnr = event.buf })
 					end
+					map("<leader>uh", function()
+						vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled({ bufnr = event.buf }), { bufnr = event.buf })
+					end, "Toggle inlay hints")
 				end,
 			})
 		end,
