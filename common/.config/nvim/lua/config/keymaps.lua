@@ -6,6 +6,20 @@
 
 local map = vim.keymap.set
 
+-- Neutralize a bare <Space>. <Space> is the leader, but on its own it's also a
+-- default motion (move cursor right). Without this, any INCOMPLETE leader
+-- sequence falls through to that motion — e.g. <Space>rn before an LSP has
+-- attached becomes "move right, then `r` replace-char with `n`", silently
+-- mangling the file. <Nop> makes the worst case "nothing happens" instead.
+map("n", "<Space>", "<Nop>", { silent = true })
+
+-- Global rename fallback. The real <leader>rn is set buffer-locally on
+-- LspAttach (lua/plugins/lsp.lua), so during basedpyright's cold start it
+-- doesn't exist yet. This global mapping covers that gap: with no rename-capable
+-- client it just prints "No matching language servers" instead of doing damage.
+-- The buffer-local map still wins once the server attaches.
+map("n", "<leader>rn", vim.lsp.buf.rename, { desc = "Rename symbol" })
+
 -- Clear search highlight by pressing Esc in normal mode.
 -- After a search, matches stay highlighted; this is the quick way to dismiss them.
 map("n", "<Esc>", "<cmd>nohlsearch<CR>", { desc = "Clear search highlight" })

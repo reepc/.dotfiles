@@ -96,7 +96,18 @@ return {
 			})
 
 			vim.lsp.config("ruff", {
-				capabilities = { offsetEncoding = "utf-16" },
+				-- Force ruff onto the SAME position encoding as basedpyright (utf-16).
+				-- basedpyright/pyright only speak utf-16; ruff defaults to utf-8. When two
+				-- clients on one buffer disagree, position math desyncs after the first
+				-- multibyte (e.g. CJK / accented / emoji) character, so completion and
+				-- hover silently stop working in any file that contains non-ASCII text —
+				-- while a fresh ASCII-only buffer works fine. `general.positionEncodings`
+				-- is the LSP-standard negotiation key; the old clangd-style `offsetEncoding`
+				-- below is kept only as a fallback (ruff ignores it).
+				capabilities = {
+					offsetEncoding = "utf-16",
+					general = { positionEncodings = { "utf-16" } },
+				},
 				init_options = {
 					settings = {
 						-- By default ruff is "filesystemFirst": a project's pyproject.toml /

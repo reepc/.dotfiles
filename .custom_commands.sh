@@ -1,7 +1,7 @@
 # Custom Function
 function delete_tmux_session {
-    tmux kill-session -a
-    tmux rename-session 0
+  tmux kill-session -a
+  tmux rename-session 0
 }
 
 # Custom Command
@@ -15,4 +15,3 @@ alias ls="eza --icons --group-directories-first"
 alias ll="eza -l --icons --group-directories-first --git"
 alias la="eza -la --icons --group-directories-first --git"
 alias lt="eza --tree --icons --level=2"
-
