@@ -229,4 +229,37 @@ return {
       })
     end,
   },
+					-- Inlay hints (VSCode-style inline types) — ON by default, toggle with
+					-- <leader>uh. ty's inlay hints are buggy over SSH with multibyte (CJK)
+					-- files — they land at columns past end-of-line and the renderer spams
+					--   inlay_hint.lua: Invalid 'col': out of range (nvim_buf_set_extmark)
+					-- so we drop ty's inlay-hint capability and let ONLY basedpyright's
+					-- well-positioned hints render. Which hint categories show is controlled
+					-- by basedpyright's inlayHints settings above (variable + return types).
+					local client = vim.lsp.get_client_by_id(event.data.client_id)
+					if client and client.name == "ty" then
+						client.server_capabilities.inlayHintProvider = nil
+					end
+
+					-- Breadcrumbs (barbecue winbar) are driven by nvim-navic. navic supports
+					-- only ONE server per buffer — and on Python BOTH basedpyright and ty
+					-- advertise documentSymbol, so a naive attach makes the second one warn
+					-- "Already attached to <other>". We attach the first symbol-capable
+					-- client and then skip the rest via navic.is_available().
+					if client and client.server_capabilities.documentSymbolProvider then
+						local ok, navic = pcall(require, "nvim-navic")
+						if ok and not navic.is_available(event.buf) then
+							navic.attach(client, event.buf)
+						end
+					end
+					if client and client:supports_method("textDocument/inlayHint") then
+						vim.lsp.inlay_hint.enable(true, { bufnr = event.buf })
+					end
+					map("<leader>uh", function()
+						vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled({ bufnr = event.buf }), { bufnr = event.buf })
+					end, "Toggle inlay hints")
+				end,
+			})
+		end,
+	},
 }
