@@ -66,9 +66,16 @@ return {
 				},
 			})
 
-			-- Python (basedpyright) — mirrored from your VSCode settings.json:
-			--   python.analysis.typeCheckingMode            -> "basic"
-			--   python.analysis.autoImportCompletions       -> true
+			-- Python split-brain setup (tuned for a large env on a CPU-limited remote):
+			--   basedpyright -> completion / hover / go-to-def / rename  (mature, kept)
+			--   ty           -> type-error diagnostics                   (Rust, fast)
+			--   ruff         -> lint + format + import sort
+			-- basedpyright's own type checking is turned OFF (typeCheckingMode = "off")
+			-- because the whole-file/project type-check pass is what pins a CPU core on a
+			-- big environment. ty does that job far faster, so basedpyright is left to do
+			-- only the things it's still best at (completion/hover/navigation).
+			--
+			-- Remaining VSCode-mirrored settings:
 			--   python.analysis.useLibraryCodeForTypes      -> true
 			--   python.analysis.inlayHints.functionReturnTypes -> true (only this hint,
 			--     matching your config; parameter/variable hints stay off)
@@ -81,7 +88,7 @@ return {
 				settings = {
 					basedpyright = {
 						analysis = {
-							typeCheckingMode = "basic",
+							typeCheckingMode = "off", -- type checking delegated to ty; this kills the heavy pass
 							autoImportCompletions = false,
 							useLibraryCodeForTypes = true,
 							inlayHints = {
@@ -124,6 +131,17 @@ return {
 				},
 			})
 
+			-- ty (astral-sh/ty): the fast Rust type checker that REPLACES basedpyright's
+			-- type-checking pass. Pin it to utf-16 for the same reason as ruff above — it
+			-- shares Python buffers with basedpyright (utf-16 only), and a mismatch desyncs
+			-- positions after the first multibyte char. ty is still preview-quality, so we
+			-- keep basedpyright for completion/hover and only lean on ty for type errors.
+			vim.lsp.config("ty", {
+				capabilities = {
+					general = { positionEncodings = { "utf-16" } },
+				},
+			})
+
 			---------------------------------------------------------------------------
 			-- Install + auto-enable servers for your stack.
 			---------------------------------------------------------------------------
@@ -132,7 +150,8 @@ return {
 					"rust_analyzer", -- Rust (clippy lint is bundled in)
 					"clangd", -- C / C++
 					"ts_ls", -- TypeScript / TSX / JS
-					"basedpyright", -- Python (semantic intelligence + type checking)
+					"basedpyright", -- Python: completion / hover / navigation (type checking OFF)
+					"ty", -- Python: fast Rust type-error diagnostics (replaces pyright checking)
 					"ruff", -- Python linting/formatting (delivered as an LSP server)
 					"lua_ls", -- Lua (for editing this config)
 					"bashls", -- shell scripts
