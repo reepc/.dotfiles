@@ -3,6 +3,12 @@
 # Env vars and the base PATH now live in ~/.zshenv so they apply to EVERY
 # shell, including the non-interactive ones tmux popups use.
 
+# Truecolor for the prompt: over plain ssh, Ghostty's ssh-env integration
+# sets COLORTERM=truecolor, but mosh doesn't propagate it. Default it when
+# unset (the mosh case) so Starship's hex colors render as 24-bit. Runs in
+# every interactive shell, so tmux panes inherit it too.
+export COLORTERM=${COLORTERM:-truecolor}
+
 fpath=("$HOME/.zsh-completions/src" $fpath)
 
 # ── Plugins ───────────────────────────────────────────────────────
