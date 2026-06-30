@@ -5,8 +5,8 @@ vec3 sRGBToLinear(vec3 c) {
 
 // --- CONFIGURATION ---
 vec4 TRAIL_COLOR = vec4(sRGBToLinear(iCurrentCursorColor.rgb), iCurrentCursorColor.a); // for custom color: vec4(0.2, 0.6, 1.0, 0.5); (wrap in sRGBToLinear for correct brightness)
-const float DURATION = 0.2; // total animation time
-const float TRAIL_SIZE = 0.8; // 0.0 = all corners move together. 1.0 = max smear (leading corners jump instantly)
+const float DURATION = 0.25; // total animation time (a touch longer so the block's stretch is visible, not a flick)
+const float TRAIL_SIZE = 0.4; // 0.0 = all corners move together. 1.0 = max smear (leading corners jump instantly -> thin streak). 0.4 keeps it a fat block stretching across.
 const float THRESHOLD_MIN_DISTANCE = 1.5; // min distance to show trail (units of cursor height)
 const float BLUR = 1.0; // blur size in pixels (for antialiasing)
 const float TRAIL_THICKNESS = 1.0;  // 1.0 = full cursor height, 0.0 = zero height, >1.0 = funky aah
