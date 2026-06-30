@@ -43,6 +43,15 @@ return {
       options = {
         diagnostics = "nvim_lsp",          -- show LSP error/warn counts on each tab
         always_show_bufferline = true,
+        -- Hide the empty, unnamed scratch buffer Vim always opens at startup, so it
+        -- doesn't sit as a stray "[No Name]" tab next to the alpha dashboard. A buffer
+        -- earns a tab once it has a filename, unsaved edits, or any real content.
+        custom_filter = function(buf)
+          if vim.api.nvim_buf_get_name(buf) ~= "" then return true end -- has a file
+          if vim.bo[buf].modified then return true end                 -- unsaved edits
+          local lines = vim.api.nvim_buf_get_lines(buf, 0, -1, false)
+          return not (#lines <= 1 and (lines[1] or "") == "")          -- has content
+        end,
         show_buffer_close_icons = true,
         show_close_icon = false,
         -- Indent the tabs so they don't sit on top of the neo-tree sidebar.
