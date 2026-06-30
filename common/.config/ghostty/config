@@ -6,6 +6,14 @@ font-family = "CaskaydiaMono Nerd Font Mono"
 font-size = 14
 font-thicken=true
 
+# Push the underline to the bottom of the cell. indent-blankline.nvim draws the
+# scope start/end as a real terminal underline; by default it sits near the text
+# baseline, leaving a gap above the ▎ indent guide so the scope "corner" looks
+# broken. A positive value moves the underline DOWN (negative = up); % is of cell
+# height. Tune this until the scope underline meets the vertical guide cleanly.
+# NOTE: this is global — it moves EVERY underline (links, spell, underlined text).
+adjust-underline-position = 25%
+
 # === Styling ===
 theme = "Atom One Dark"
 background = #282c34
