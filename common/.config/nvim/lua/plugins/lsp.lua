@@ -215,9 +215,25 @@ return {
 					-- so we drop ty's inlay-hint capability and let ONLY basedpyright's
 					-- well-positioned hints render. Which hint categories show is controlled
 					-- by basedpyright's inlayHints settings above (variable + return types).
+					--
+					-- ty ALSO advertises definition/references/implementation/hover/symbols,
+					-- so it answers navigation requests too. fzf-lua's lsp_definitions /
+					-- lsp_references / lsp_implementations fan out to EVERY attached client
+					-- and merge results — with both basedpyright and ty replying, every gd/gr/
+					-- gri location showed up twice. ty is diagnostics-only in this setup, so
+					-- strip all of its non-diagnostic providers and let basedpyright own
+					-- navigation/hover/symbols outright (no duplicates, single source of truth).
 					local client = vim.lsp.get_client_by_id(event.data.client_id)
 					if client and client.name == "ty" then
 						client.server_capabilities.inlayHintProvider = nil
+						client.server_capabilities.definitionProvider = nil
+						client.server_capabilities.typeDefinitionProvider = nil
+						client.server_capabilities.declarationProvider = nil
+						client.server_capabilities.implementationProvider = nil
+						client.server_capabilities.referencesProvider = nil
+						client.server_capabilities.hoverProvider = nil
+						client.server_capabilities.documentSymbolProvider = nil
+						client.server_capabilities.completionProvider = nil
 					end
 
 					-- Breadcrumbs (barbecue winbar) are driven by nvim-navic. navic supports
