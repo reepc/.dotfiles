@@ -19,6 +19,11 @@ return {
 			grep = {
 				rg_opts = [[--hidden --column --line-number --no-heading --color=always --smart-case --max-columns=4096 -g "!.git" -e]],
 			},
+			buffers = {
+				-- Drop the buffer you're already in from the list, so the top entry is
+				-- the buffer you were in last — one <CR> flips you back to it (alt-tab feel).
+				ignore_current_buffer = true,
+			},
 		},
 
 		-- LSP pickers (gd/gr/gri) only encode file:line:col, so the preview would

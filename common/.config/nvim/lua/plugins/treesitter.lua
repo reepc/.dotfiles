@@ -33,7 +33,13 @@ return {
         "json",
         "yaml",
         "toml",
+        "dockerfile",
+        "make",
+        "html",
+        "css",
+        "scss",
         "markdown",
+        "markdown_inline", -- needed by render-markdown.nvim for inline styling
       })
 
       -- On the main branch, highlighting is enabled per-buffer via an autocmd
