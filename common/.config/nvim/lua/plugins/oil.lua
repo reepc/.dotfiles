@@ -32,6 +32,17 @@ return {
       default_file_explorer = true,
       -- Confirm before applying changes when you :w — your safety net against typos.
       skip_confirm_for_simple_edits = false,
+      -- Rename/move a file in oil → the LSP (ts_ls, rust_analyzer, basedpyright,
+      -- clangd, …) rewrites every import that pointed at the old path. `enabled`
+      -- is oil's default; the piece worth setting is autosave_changes, so files
+      -- oil edited to fix imports get written to disk instead of left unsaved.
+      -- "unmodified" = only auto-save buffers you hadn't already edited yourself,
+      -- so it never silently writes over your in-progress changes.
+      lsp_file_methods = {
+        enabled = true,
+        timeout_ms = 1000,
+        autosave_changes = "unmodified",
+      },
       view_options = {
         show_hidden = true, -- show dotfiles (you're literally editing a dotfiles repo)
       },

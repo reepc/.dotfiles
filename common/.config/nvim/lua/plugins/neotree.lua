@@ -18,6 +18,26 @@ return {
       { "<leader>fe", "<cmd>Neotree toggle<CR>", desc = "Toggle file explorer" },
     },
     opts = {
+      -- Neo-tree, unlike oil, has no built-in LSP integration: renaming/moving a
+      -- file here won't touch imports on its own. It DOES fire `file_renamed` /
+      -- `file_moved` events carrying { source, destination }, so we hook those and
+      -- ask every attached server to update references via workspace/willRenameFiles
+      -- (supported by ts_ls, rust_analyzer, basedpyright, clangd, …). This mirrors
+      -- what oil does for free (see oil.lua's lsp_file_methods).
+      event_handlers = {
+        {
+          event = "file_renamed",
+          handler = function(args)
+            require("config.lsp_rename").on_rename(args.source, args.destination)
+          end,
+        },
+        {
+          event = "file_moved",
+          handler = function(args)
+            require("config.lsp_rename").on_rename(args.source, args.destination)
+          end,
+        },
+      },
       filesystem = {
         follow_current_file = { enabled = true }, -- highlight the file you're editing
         use_libuv_file_watcher = true,            -- auto-refresh when files change on disk
