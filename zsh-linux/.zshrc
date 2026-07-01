@@ -111,3 +111,6 @@ fi
 
 # ── Starship (always last) ────────────────────────────────────────
 eval "$(starship init zsh)"
+
+# opencode
+export PATH=/home/reepc/.opencode/bin:$PATH
