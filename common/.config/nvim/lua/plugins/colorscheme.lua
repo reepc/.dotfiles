@@ -10,6 +10,10 @@ return {
     config = function()
       require("onedarkpro").setup({
         cursorline = true,
+        styles = {
+          -- Italicize function/method parameters, like VSCode's One Dark Pro.
+          parameters = "italic",
+        },
       })
 
       -- onedarkpro gives import module names their own group (priority 126), so
@@ -28,6 +32,21 @@ return {
             "@odp.import_module.python",
           }) do
             vim.api.nvim_set_hl(0, group, link)
+          end
+
+          -- Diagnostics: use a wavy undercurl instead of a straight underline.
+          -- We keep each group's existing color (sp) and just flip underline
+          -- off / undercurl on.
+          for _, group in ipairs({
+            "DiagnosticUnderlineError",
+            "DiagnosticUnderlineWarn",
+            "DiagnosticUnderlineInfo",
+            "DiagnosticUnderlineHint",
+          }) do
+            local hl = vim.api.nvim_get_hl(0, { name = group, link = false })
+            hl.underline = false
+            hl.undercurl = true
+            vim.api.nvim_set_hl(0, group, hl)
           end
         end,
       })
