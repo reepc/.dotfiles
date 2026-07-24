@@ -19,6 +19,7 @@ typeset -U path PATH          # auto-dedupe PATH entries
 path=(
   $HOME/.local/bin
   $HOME/bin
+  $HOME/.cargo/bin      # Rust toolchain, available to every shell
   /usr/local/bin
   /usr/local/cuda/bin
   $path

@@ -32,6 +32,17 @@ apt_install() {
 
 # ── macOS ─────────────────────────────────────────────────────────
 setup_mac() {
+  # Xcode Command Line Tools: the macOS build toolchain (clang, make,
+  # headers) — the equivalent of Linux's build-essential. Homebrew needs
+  # it too, so install it first.
+  if ! xcode-select -p &>/dev/null; then
+    info "Installing Xcode Command Line Tools (clang, make)..."
+    xcode-select --install
+    info "Finish the CLT GUI installer, then re-run this script."
+  else
+    skip "Xcode Command Line Tools"
+  fi
+
   if ! check_cmd brew; then
     info "Installing Homebrew..."
     /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
@@ -39,7 +50,7 @@ setup_mac() {
     skip "Homebrew"
   fi
 
-  for pkg in zsh stow fzf zoxide starship eza bat tmux neovim \
+  for pkg in zsh stow fzf zoxide starship eza bat tmux neovim node \
              zsh-autosuggestions zsh-syntax-highlighting zsh-completions; do
     brew_install "$pkg"
   done
@@ -49,7 +60,7 @@ setup_mac() {
 setup_linux() {
   sudo apt-get update -qq
 
-  for pkg in zsh stow tmux curl wget git \
+  for pkg in zsh stow tmux curl wget git unzip build-essential clang \
              zsh-autosuggestions zsh-syntax-highlighting; do
     apt_install "$pkg"
   done
@@ -130,6 +141,16 @@ setup_linux() {
     skip "NVM"
   fi
 
+  # Node LTS via NVM — NVM itself ships no node, so install one to get npm.
+  export NVM_DIR="$HOME/.nvm"
+  [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+  if check_cmd nvm && ! check_cmd npm; then
+    info "Installing Node LTS (npm) via nvm..."
+    nvm install --lts
+  else
+    skip "Node/npm"
+  fi
+
   # conda — not in apt
   if ! check_cmd conda; then
     info "Installing Miniconda..."
@@ -147,6 +168,19 @@ setup_linux() {
     info "Setting zsh as default shell..."
     chsh -s "$(which zsh)"
   fi
+}
+
+# ── Rust toolchain (both platforms) ──────────────────────────────
+# rustup installs to ~/.cargo & ~/.rustup. --no-modify-path because our
+# ~/.zshenv already puts ~/.cargo/bin on PATH (single source of truth).
+setup_rust() {
+  if check_cmd cargo || [[ -x "$HOME/.cargo/bin/cargo" ]]; then
+    skip "Rust"
+    return
+  fi
+  info "Installing Rust (rustup)..."
+  curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs \
+    | sh -s -- -y --no-modify-path
 }
 
 # ── fzf-tab (both platforms) ─────────────────────────────────────
@@ -182,6 +216,7 @@ main() {
   [[ "$PLATFORM" == "mac" ]]   && setup_mac
   [[ "$PLATFORM" == "linux" ]] && setup_linux
 
+  setup_rust
   setup_fzf_tab
   setup_stow
 
