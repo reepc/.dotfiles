@@ -149,14 +149,13 @@ return {
 				ensure_installed = {
 					"rust_analyzer", -- Rust (clippy lint is bundled in)
 					"clangd", -- C / C++
-					"ts_ls", -- TypeScript / TSX / JS
+					"vtsls",
 					"basedpyright", -- Python: completion / hover / navigation (type checking OFF)
 					"ty", -- Python: fast Rust type-error diagnostics (replaces pyright checking)
 					"ruff", -- Python linting/formatting (delivered as an LSP server)
 					"lua_ls", -- Lua (for editing this config)
 					"bashls", -- shell scripts
-					-- "eslint",      -- uncomment for TS/React ESLint rules (you do React;
-					--   add when you want lint rules firing in .tsx files)
+					"eslint", -- uncomment for TS/React ESLint rules (you do React;
 				},
 				-- automatic_enable defaults to true: installed servers start automatically.
 			})

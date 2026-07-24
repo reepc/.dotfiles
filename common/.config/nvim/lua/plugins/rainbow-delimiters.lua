@@ -26,7 +26,19 @@ return {
         },
         query = {
           [""] = "rainbow-delimiters",
+          -- .tsx (typescriptreact): the default tsx query captures JSX <tags>
+          -- (`<`, tag name, `>`) AS delimiters, so every element got rainbow-
+          -- colored like a bracket pair. `rainbow-parens` inherits the plain
+          -- code-bracket rules (typescript -> javascript: {} () [] and the TS
+          -- type brackets) but DROPS the JSX tag rules — so real brackets still
+          -- get colored, tags don't. (It also skips the JSX {expr} braces.)
+          -- Keys here are Tree-sitter LANGUAGE names, not vim filetypes.
+          tsx = "rainbow-parens",
         },
+        -- HTML is essentially all tags — there's nothing else worth cycling
+        -- colors on — so disable rainbow-delimiters there outright. `blacklist`
+        -- is likewise keyed by Tree-sitter language name.
+        blacklist = { "html" },
         -- 3-color cycle (defined in indent.lua's HIGHLIGHT_SETUP hook, colors
         -- pulled from the onedarkpro palette).
         highlight = {

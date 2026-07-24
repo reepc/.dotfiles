@@ -12,7 +12,7 @@ font-thicken=true
 # broken. A positive value moves the underline DOWN (negative = up); % is of cell
 # height. Tune this until the scope underline meets the vertical guide cleanly.
 # NOTE: this is global — it moves EVERY underline (links, spell, underlined text).
-adjust-underline-position = 25%
+adjust-underline-position = 10%
 
 # === Styling ===
 theme = "Atom One Dark"

@@ -24,9 +24,13 @@ function M.on_rename(from, to)
     },
   }
 
+  -- 3s, not 1s: computing a rename means the server scans the whole project for
+  -- references, which is slow on a large tree / CPU-limited remote. request_sync
+  -- BLOCKS the editor for up to this long per capable client, so don't push it too
+  -- high — 3s is the balance between "finishes in time" and "noticeable freeze".
   for _, client in ipairs(vim.lsp.get_clients()) do
     if client:supports_method("workspace/willRenameFiles") then
-      local resp = client:request_sync("workspace/willRenameFiles", changes, 1000, 0)
+      local resp = client:request_sync("workspace/willRenameFiles", changes, 3000, 0)
       if resp and resp.result then
         vim.lsp.util.apply_workspace_edit(resp.result, client.offset_encoding)
       end

@@ -40,11 +40,28 @@ return {
       -- so it never silently writes over your in-progress changes.
       lsp_file_methods = {
         enabled = true,
-        timeout_ms = 1000,
+        -- 3s, not the 1s default: on a large project (and a CPU-limited remote)
+        -- the server has to scan the whole tree for references before it can
+        -- return the import edits, and 1s times out before it finishes.
+        timeout_ms = 3000,
         autosave_changes = "unmodified",
       },
       view_options = {
         show_hidden = true, -- show dotfiles (you're literally editing a dotfiles repo)
+      },
+      -- Side preview like fzf-lua: a split shows the content of the entry under
+      -- the cursor. update_on_cursor_moved makes it follow as you move up/down,
+      -- so browsing an oil buffer feels like scrolling an fzf-lua picker.
+      -- The window itself is auto-opened on enter by the OilEnter autocmd below;
+      -- fast_scratch loads content without fully attaching LSP/plugins, so moving
+      -- the cursor stays snappy on big files.
+      preview_win = {
+        update_on_cursor_moved = true,
+        preview_method = "fast_scratch",
+        -- Don't try to preview huge/binary files — keeps cursor movement instant.
+        disable_preview = function(name)
+          return name:match("%.png$") or name:match("%.jpe?g$") or name:match("%.gif$") or name:match("%.pdf$")
+        end,
       },
       -- A floating preview-style window feels closer to VSCode; tweak to taste.
       float = {
@@ -53,6 +70,29 @@ return {
         max_height = 0,
       },
     },
+    config = function(_, opts)
+      require("oil").setup(opts)
+
+      -- Auto-open the side preview whenever you enter an oil buffer, so the
+      -- content panel is always there (fzf-lua style) instead of only after
+      -- pressing <C-p>. OilEnter fires on the initial open and on every cd into
+      -- a subdir; schedule_wrap defers so the cursor entry is resolved. We skip
+      -- directories (../ etc.) because there's nothing to preview — once open,
+      -- update_on_cursor_moved above keeps the panel in sync as you move.
+      vim.api.nvim_create_autocmd("User", {
+        pattern = "OilEnter",
+        callback = vim.schedule_wrap(function(args)
+          local oil = require("oil")
+          if vim.api.nvim_get_current_buf() ~= args.data.buf then
+            return
+          end
+          local entry = oil.get_cursor_entry()
+          if entry and entry.type ~= "directory" and not require("oil.util").get_preview_win() then
+            oil.open_preview()
+          end
+        end),
+      })
+    end,
   },
 }
 -- Tip: inside oil, `<C-p>` previews the file under the cursor without opening it,

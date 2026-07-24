@@ -8,7 +8,30 @@ alias py3="python3"
 alias treet="tree -I 'node_modules|__pycache__|.nuxt|dist|.next|target|icons'"
 alias clean_mem="pkill -f 'Visual Studio Code'"
 alias activate="source .venv/bin/activate"
-alias autossh_connect="autossh -M 0 -o 'ServerAliveInterval 30' -o 'ServerAliveCountMax 3'"
+
+# ── autossh (persistent SSH, auto-reconnect) ─────────────────────
+# Wraps autossh with keepalives, and forwards Discord's IPC socket so
+# cord.nvim running on the remote drives Rich Presence on THIS Mac's
+# Discord client. autossh runs plain ssh underneath, so — unlike mosh —
+# it can carry a -R Unix-socket forward and re-establish it on reconnect.
+#
+# The local socket ($TMPDIR/discord-ipc-N on macOS) is auto-detected and
+# the -R flag is added ONLY when Discord is running, so a closed Discord
+# never blocks the login. It lands on the server at
+# /run/user/<uid>/discord-ipc-0, which cord finds via XDG_RUNTIME_DIR.
+# Override the remote uid per-host with DISCORD_REMOTE_UID=... (default
+# 1000). Requires `StreamLocalBindUnlink yes` in the server's
+# sshd_config so a reconnect can replace the stale socket.
+unalias autossh_connect 2>/dev/null
+autossh_connect() {
+  local fwd=() sock
+  for sock in ${TMPDIR:-/tmp}/discord-ipc-*(Nom) /tmp/discord-ipc-*(Nom); do
+    [[ -S $sock ]] || continue
+    fwd=(-R "/run/user/${DISCORD_REMOTE_UID:-1000}/discord-ipc-0:$sock")
+    break
+  done
+  autossh -M 0 -o 'ServerAliveInterval 30' -o 'ServerAliveCountMax 3' "${fwd[@]}" "$@"
+}
 
 # ── eza (modern ls) ──────────────────────────────────────────────
 # Functions, not aliases, for two reasons:

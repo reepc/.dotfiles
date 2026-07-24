@@ -24,25 +24,26 @@ export PATH="$HOME/.local/bin:/opt/homebrew/bin:/usr/local/bin:$PATH"
 # become candidates); the root itself is also included so e.g. ~/.dotfiles is
 # selectable directly. Edit this list to taste.
 SEARCH_ROOTS=(
-    "$HOME/projects"
-    "$HOME/.dotfiles"
-    "$HOME/.config"
+  "$HOME/projects"
+  "$HOME/.dotfiles"
+  "$HOME/.config"
+  "$HOME/models"
 )
 
 if [[ $# -eq 1 ]]; then
-    selected="$1"
+  selected="$1"
 else
-    # Build the candidate list: each root, plus its immediate subdirectories.
-    candidates=$(
-        for root in "${SEARCH_ROOTS[@]}"; do
-            [[ -d "$root" ]] || continue
-            printf '%s\n' "$root"
-            find "$root" -mindepth 1 -maxdepth 1 -type d 2>/dev/null
-        done
-    )
-    # No --height here: inside a tmux popup the window is already the right size,
-    # and fzf's --height mode can misbehave there. Let fzf use the full popup.
-    selected=$(printf '%s\n' "$candidates" | fzf --prompt="session> " --reverse)
+  # Build the candidate list: each root, plus its immediate subdirectories.
+  candidates=$(
+    for root in "${SEARCH_ROOTS[@]}"; do
+      [[ -d "$root" ]] || continue
+      printf '%s\n' "$root"
+      find "$root" -mindepth 1 -maxdepth 1 -type d 2>/dev/null
+    done
+  )
+  # No --height here: inside a tmux popup the window is already the right size,
+  # and fzf's --height mode can misbehave there. Let fzf use the full popup.
+  selected=$(printf '%s\n' "$candidates" | fzf --prompt="session> " --reverse)
 fi
 
 # Nothing picked (Esc / Ctrl-c) -> bail quietly.
@@ -54,20 +55,20 @@ tmux_running=$(pgrep tmux)
 
 # Case 1: outside tmux AND no server running yet -> create + attach in one go.
 if [[ -z "$TMUX" && -z "$tmux_running" ]]; then
-    tmux new-session -s "$selected_name" -c "$selected"
-    exit 0
+  tmux new-session -s "$selected_name" -c "$selected"
+  exit 0
 fi
 
 # Create the session detached if it doesn't already exist (idempotent: a repeat
 # pick of the same project just reuses it instead of erroring).
 if ! tmux has-session -t="$selected_name" 2>/dev/null; then
-    tmux new-session -ds "$selected_name" -c "$selected"
+  tmux new-session -ds "$selected_name" -c "$selected"
 fi
 
 # Case 2: outside tmux but a server exists -> attach.
 # Case 3: already inside tmux -> switch (can't nest attach).
 if [[ -z "$TMUX" ]]; then
-    tmux attach -t "$selected_name"
+  tmux attach -t "$selected_name"
 else
-    tmux switch-client -t "$selected_name"
+  tmux switch-client -t "$selected_name"
 fi
