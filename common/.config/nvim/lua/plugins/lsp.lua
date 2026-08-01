@@ -172,6 +172,14 @@ return {
 				capabilities = {
 					general = { positionEncodings = { "utf-16" } },
 				},
+				-- ty advertises a rename provider, but its preview-quality prepareRename
+				-- intermittently returns null. vim.lsp.buf.rename() tries EVERY rename-
+				-- capable client (basedpyright + ty), and the try order depends on which
+				-- server initialized first — so rename randomly landed on ty and printed
+				-- "Nothing to rename". Drop the capability so basedpyright alone owns rename.
+				on_init = function(client)
+					client.server_capabilities.renameProvider = nil
+				end,
 			})
 
 			---------------------------------------------------------------------------
