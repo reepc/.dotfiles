@@ -69,6 +69,32 @@ end
 opt.undofile = true -- persist undo history to disk — undo even after closing a file
 opt.swapfile = false -- no swap files (they cause "file already open" annoyances)
 
+-- === Auto-reload files changed on disk ===
+-- When something OUTSIDE this nvim rewrites a file you have open — an AI agent
+-- writing to disk, a git checkout/pull, a formatter in another pane — reload the
+-- buffer instead of silently keeping the stale version. `autoread` alone only acts
+-- at certain moments; the autocmd runs `:checktime` when you refocus nvim or pause
+-- (updatetime = 250ms above), so external edits show up almost immediately. We skip
+-- non-file buffers (oil, terminals, prompts) and command-line mode so it never
+-- interrupts you mid-command. Note: this reloads CONTENT changes only — a file that
+-- was renamed or deleted on disk can't be redirected (nvim has no new path to point
+-- the buffer at); that stale buffer is expected, close it with :bd.
+opt.autoread = true
+vim.api.nvim_create_autocmd({ "FocusGained", "BufEnter", "CursorHold", "CursorHoldI" }, {
+	callback = function()
+		if vim.bo.buftype == "" and vim.fn.mode() ~= "c" then
+			vim.cmd("checktime")
+		end
+	end,
+})
+-- Say so when a reload actually happens, so the buffer changing under you isn't a
+-- silent surprise.
+vim.api.nvim_create_autocmd("FileChangedShellPost", {
+	callback = function()
+		vim.notify("Buffer reloaded — file changed on disk", vim.log.levels.INFO)
+	end,
+})
+
 -- === Splits (where new windows open) ===
 opt.splitright = true -- vertical splits open to the right
 opt.splitbelow = true -- horizontal splits open below

@@ -60,7 +60,11 @@ setup_mac() {
 setup_linux() {
   sudo apt-get update -qq
 
-  for pkg in zsh stow tmux curl wget git unzip build-essential clang \
+  # inotify-tools: gives Neovim's LSP file-watching an event-driven backend
+  # (inotifywait) instead of a directory poll, so a file created by oil or an
+  # agent is picked up and its imports resolve without opening it. Linux-only —
+  # macOS uses fs_event natively. See lua/plugins/lsp.lua (vim.lsp.config("*")).
+  for pkg in zsh stow tmux curl wget git unzip build-essential clang inotify-tools \
              zsh-autosuggestions zsh-syntax-highlighting; do
     apt_install "$pkg"
   done

@@ -8,6 +8,8 @@
 #  - No rainbow / no powerline arrows, just colored text
 # ============================================================
 
+scan_timeout = 1000
+
 format = """
 $os\
 $username\
@@ -33,17 +35,17 @@ add_newline = true
 palette = "tokyo"
 
 [palettes.tokyo]
-bg          = "#1a1b26"
-fg          = "#c0caf5"
-muted       = "#565f89"
-blue        = "#7aa2f7"
-cyan        = "#7dcfff"
-purple      = "#bb9af7"
-green       = "#9ece6a"
-yellow      = "#e0af68"
-orange      = "#ff9e64"
-red         = "#f7768e"
-pink        = "#f5bde6"
+bg = "#1a1b26"
+fg = "#c0caf5"
+muted = "#565f89"
+blue = "#7aa2f7"
+cyan = "#7dcfff"
+purple = "#bb9af7"
+green = "#9ece6a"
+yellow = "#e0af68"
+orange = "#ff9e64"
+red = "#f7768e"
+pink = "#f5bde6"
 
 # ------------------------------------------------------------
 #  OS (show symbol only, no name)
@@ -119,7 +121,12 @@ symbol = ""
 style = "yellow"
 format = '[${symbol} ${pyenv_prefix}(${version} )(\($virtualenv\) )]($style) '
 detect_extensions = ["py"]
-detect_files = ["requirements.txt", "pyproject.toml", "Pipfile", ".python-version"]
+detect_files = [
+    "requirements.txt",
+    "pyproject.toml",
+    "Pipfile",
+    ".python-version",
+]
 detect_folders = [".venv", "venv"]
 python_binary = ["python3", "python"]
 

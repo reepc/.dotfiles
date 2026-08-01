@@ -53,7 +53,39 @@ return {
 			})
 
 			---------------------------------------------------------------------------
-			-- Per-server settings via the native API.RRR
+			-- File-watching capability — the fix for "a file I created (via oil, or by
+			-- an agent writing to disk) shows up as a not-found import everywhere it's
+			-- referenced, until I actually OPEN the new file."
+			--
+			-- A server only re-resolves an import once it learns the target file exists,
+			-- and it learns that from workspace/didChangeWatchedFiles. Neovim advertises
+			-- that capability by default ONLY on macOS/Windows — on Linux it's hard-off
+			-- (runtime protocol.lua: "do not advertise didChangeWatchedFiles on Linux …
+			-- backends are too limited"). So on the Linux remote, NO server ever hears
+			-- about a file created outside an open buffer, and the import stays "not
+			-- found" until you open it. `'*'` applies to every server; the capability is
+			-- deep-merged over nvim's defaults, so this just flips the one Linux gate.
+			--
+			-- Delivery still needs a watch backend. nvim picks it at startup:
+			--   macOS   -> libuv fs_event (recursive) — works out of the box.
+			--   Linux   -> `inotifywait` if installed, else a directory POLL. On the
+			--              CPU-limited remote, install inotify-tools so it uses inotify
+			--              (event-driven) instead of polling the tree — `apt install
+			--              inotify-tools` / `dnf install inotify-tools`.
+			---------------------------------------------------------------------------
+			vim.lsp.config("*", {
+				capabilities = {
+					workspace = {
+						didChangeWatchedFiles = {
+							dynamicRegistration = true,
+							relativePatternSupport = true,
+						},
+					},
+				},
+			})
+
+			---------------------------------------------------------------------------
+			-- Per-server settings via the native API.
 			---------------------------------------------------------------------------
 
 			-- Lua: teach it the `vim` global so it stops warning in your config files.
