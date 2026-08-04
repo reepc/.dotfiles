@@ -63,11 +63,25 @@ return {
           return name:match("%.png$") or name:match("%.jpe?g$") or name:match("%.gif$") or name:match("%.pdf$")
         end,
       },
-      -- A floating preview-style window feels closer to VSCode; tweak to taste.
+      -- fzf-lua-style floating picker: a big centered frame, list on the left,
+      -- preview on the right. Key facts about how oil lays this out (see
+      -- oil/init.lua open_preview + oil/layout.lua split_window):
+      --   * max_width/max_height cap the WHOLE float (list + preview together).
+      --     A float 0<x<1 means a fraction of the editor, so 0.9 = 90% of screen
+      --     — that's what makes it large instead of the old fixed 90 columns.
+      --   * The two panes are always split 50/50 (oil has no ratio option).
+      --   * `padding` is reused as the GAP between the two panes, so keeping it
+      --     small (2) closes the wide black strip we had down the middle.
+      --   * `border` frames each pane; with a small padding the two rounded
+      --     panels sit side by side and read as one picker instead of two boxes.
+      --   * preview_split = "right" pins the preview to the right of the list
+      --     regardless of your 'splitright' setting.
       float = {
-        padding = 4,
-        max_width = 90,
-        max_height = 0,
+        padding = 2,
+        max_width = 0.9,
+        max_height = 0.9,
+        border = "rounded",
+        preview_split = "right",
       },
     },
     config = function(_, opts)
