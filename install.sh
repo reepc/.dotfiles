@@ -187,6 +187,26 @@ setup_rust() {
     | sh -s -- -y --no-modify-path
 }
 
+# ── pnpm (both platforms) ────────────────────────────────────────
+# node ships corepack, which manages pnpm without touching PATH (its shim
+# lands in node's bin dir, already on PATH). Fall back to pnpm's standalone
+# installer when corepack isn't available. PNPM_HOME (where `pnpm add -g`
+# binaries live) is put on PATH by our zshrc, not here.
+setup_pnpm() {
+  if check_cmd pnpm; then
+    skip "pnpm"
+    return
+  fi
+  if check_cmd corepack; then
+    info "Installing pnpm (corepack)..."
+    corepack enable pnpm
+    corepack prepare pnpm@latest --activate
+  else
+    info "Installing pnpm (standalone script)..."
+    curl -fsSL https://get.pnpm.io/install.sh | sh -
+  fi
+}
+
 # ── fzf-tab (both platforms) ─────────────────────────────────────
 setup_fzf_tab() {
   if [[ ! -d "$HOME/.fzf-tab" ]]; then
@@ -221,6 +241,7 @@ main() {
   [[ "$PLATFORM" == "linux" ]] && setup_linux
 
   setup_rust
+  setup_pnpm
   setup_fzf_tab
   setup_stow
 

@@ -103,3 +103,11 @@ unset __conda_setup
 
 # ── Starship (always last) ────────────────────────────────────────
 eval "$(starship init zsh)"
+
+# pnpm
+export PNPM_HOME="/Users/reepc/Library/pnpm"
+case ":$PATH:" in
+  *":$PNPM_HOME/bin:"*) ;;
+  *) export PATH="$PNPM_HOME/bin:$PATH" ;;
+esac
+# pnpm end
