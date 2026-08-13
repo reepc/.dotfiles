@@ -30,6 +30,16 @@ return {
 				highlights = {
 					["@odp.import_module"] = {},
 					["@odp.import_module.python"] = {},
+					-- Python namespaces (e.g. `os` in `os.path`) render RED by default,
+					-- which reads like a variable. basedpyright tags them as an LSP
+					-- `namespace` token, but onedarkpro links `@lsp.type.namespace` to the
+					-- `@namespace` group — which is EMPTY (no fg). An empty semantic-token
+					-- group contributes nothing, so the treesitter layer underneath wins:
+					-- a bare identifier is `@variable` -> red. We instead link the namespace
+					-- token to `@module` (onedarkpro's canonical namespace group, yellow) so
+					-- namespaces match classes. Scoped to `.python` via the filetype suffix,
+					-- which neovim looks up before the base group.
+					["@lsp.type.namespace.python"] = { link = "@module" },
 				},
 			})
 
