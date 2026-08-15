@@ -4,4 +4,3 @@ function delete_tmux_session {
   tmux kill-session -a
   tmux rename-session 0
 }
-
