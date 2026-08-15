@@ -55,6 +55,9 @@ source ~/.zsh_zoxide.zsh
 # ── Custom commands ───────────────────────────────────────────────
 [[ -f ~/.custom_commands.sh ]] && source ~/.custom_commands.sh
 
+# ── Local overrides (untracked, per-machine — network/host secrets) ─
+[[ -f ~/.zsh_local.zsh ]] && source ~/.zsh_local.zsh
+
 # ── Aliases ───────────────────────────────────────────────────────
 [[ -f ~/.zsh_alias.zsh ]] && source ~/.zsh_alias.zsh
 

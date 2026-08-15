@@ -60,6 +60,9 @@ if [[ -f ~/.custom_commands.sh ]]; then
   . ~/.custom_commands.sh
 fi
 
+# ── Local overrides (untracked, per-machine — network/host secrets) ─
+[[ -f ~/.zsh_local.zsh ]] && source ~/.zsh_local.zsh
+
 # ── Aliases ───────────────────────────────────────────────────────
 [[ -f ~/.zsh_alias.zsh ]] && source ~/.zsh_alias.zsh
 
