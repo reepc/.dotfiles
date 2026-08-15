@@ -6,8 +6,6 @@ alias ca="conda activate"
 alias cda="conda deactivate"
 alias py3="python3"
 alias treet="tree -I 'node_modules|__pycache__|.nuxt|dist|.next|target|icons'"
-alias clean_mem="pkill -f 'Visual Studio Code'"
-alias activate="source .venv/bin/activate"
 
 # ── autossh (persistent SSH, auto-reconnect) ─────────────────────
 # Wraps autossh with keepalives, and forwards Discord's IPC socket so
