@@ -104,6 +104,7 @@ return {
 		},
 	},
 }
--- Note: live_grep needs ripgrep (`rg`) installed, and the picker itself needs
--- the `fzf` binary on the system/server.
--- On the remote: `sudo apt install ripgrep fzf`. On mac: `brew install ripgrep fzf`.
+-- Note: this needs `fzf`, `fd` and `rg` (ripgrep) on the system/server — all three
+-- are installed by ~/.dotfiles/install.sh on both platforms. Without `fd`, files()
+-- falls back to `rg --files`; without both, it falls back to `find`, which does not
+-- honour .gitignore. Likewise live_grep() degrades to plain `grep` without `rg`.

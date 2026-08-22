@@ -63,3 +63,7 @@ map("v", "<S-Tab>", "<gv", { desc = "Outdent selection" })
 -- Normally pasting over text copies the deleted text; this keeps what you originally yanked.
 map("x", "<leader>p", [["_dP]], { desc = "Paste without yanking selection" })
 
+-- Copy file path
+map("n", "<leader>pa", '<cmd>let @+ = expand("%:p")<cr>', { desc = "Copy absolute path" })
+map("n", "<leader>pr", '<cmd>let @+ = expand("%")<cr>', { desc = "Copy relative path" })
+map("n", "<leader>pf", '<cmd>let @+ = expand("%:t")<cr>', { desc = "Copy file name" })

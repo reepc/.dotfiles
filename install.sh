@@ -50,7 +50,11 @@ setup_mac() {
     skip "Homebrew"
   fi
 
-  for pkg in zsh stow fzf zoxide starship eza bat tmux neovim node \
+  # fd + ripgrep: fzf-lua's file/grep pickers (<leader>ff / <leader>fg) probe for
+  # these and fall back to plain `find`/`grep`, which do NOT honour .gitignore —
+  # the picker then floods with node_modules, target/, build output, etc.
+  # See common/.config/nvim/lua/plugins/fzf.lua.
+  for pkg in zsh stow fzf fd ripgrep zoxide starship eza bat tmux neovim node \
              zsh-autosuggestions zsh-syntax-highlighting zsh-completions; do
     brew_install "$pkg"
   done
@@ -65,7 +69,7 @@ setup_linux() {
   # agent is picked up and its imports resolve without opening it. Linux-only —
   # macOS uses fs_event natively. See lua/plugins/lsp.lua (vim.lsp.config("*")).
   for pkg in zsh stow tmux curl wget git unzip build-essential clang inotify-tools \
-             zsh-autosuggestions zsh-syntax-highlighting; do
+             ripgrep zsh-autosuggestions zsh-syntax-highlighting; do
     apt_install "$pkg"
   done
 
@@ -75,6 +79,15 @@ setup_linux() {
     info "Symlinking batcat → bat..."
     mkdir -p "$HOME/.local/bin"
     ln -sf "$(which batcat)" "$HOME/.local/bin/bat"
+  fi
+
+  # fd — Ubuntu ships it as fdfind. fzf-lua probes `fdfind` before `fd` so Neovim
+  # works without the symlink; the symlink is for using `fd` from the shell.
+  apt_install fd-find
+  if check_cmd fdfind && ! check_cmd fd; then
+    info "Symlinking fdfind → fd..."
+    mkdir -p "$HOME/.local/bin"
+    ln -sf "$(which fdfind)" "$HOME/.local/bin/fd"
   fi
 
   if [[ ! -d "$HOME/.zsh-completions" ]]; then

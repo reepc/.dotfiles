@@ -26,3 +26,4 @@ export PATH="$HOME/.cargo/bin:$PATH"
 # findable in non-interactive shells WITHOUT overriding the system python3.
 # Interactive shells (~/.zshrc) re-prioritise Homebrew to the front.
 [ -x /opt/homebrew/bin/brew ] && export PATH="$PATH:/opt/homebrew/bin:/opt/homebrew/sbin"
+. "$HOME/.cargo/env"
