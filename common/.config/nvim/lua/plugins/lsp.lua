@@ -122,7 +122,14 @@ return {
 						analysis = {
 							typeCheckingMode = "off", -- type checking delegated to ty; this kills the heavy pass
 							autoImportCompletions = false,
-							useLibraryCodeForTypes = false,
+							-- MUST stay true. When false, basedpyright refuses to read the SOURCE of
+							-- any dependency that ships no `py.typed` marker and has no stub package,
+							-- so every symbol in it collapses to `Any` — no declaration, which means
+							-- no hover, no completion, and `gd` answering "no definition". pandas is
+							-- exactly that case (no py.typed, stubs live in the separate pandas-stubs
+							-- package), which is why `gd` on pd.read_json went nowhere while numpy —
+							-- which DOES ship py.typed — kept working and hid the problem.
+							useLibraryCodeForTypes = true,
 							inlayHints = {
 								callArgumentNames = false,
 								variableTypes = false, -- `self.x: SomeType` inline annotations
