@@ -45,10 +45,64 @@ return {
 			-- Auto-popup: when the cursor rests on a line (updatetime = 250ms, set in
 			-- options.lua), show that line's diagnostics in a float. Moving the cursor
 			-- dismisses it automatically. <leader>e still opens it on demand.
+			--
+			-- The diagnostic float and the K hover popup anchor to the SAME spot (just
+			-- above/below the cursor), so without guards they stack on top of each other:
+			--   * press K while the diagnostic float is up  -> hover lands on top of it
+			--   * press K, then sit still for 250ms         -> CursorHold fires and drops
+			--     the diagnostic float on top of the hover
+			-- Normally nvim's own open_floating_preview would close the previous float for
+			-- us, but noice renders hover in its own nui window (lsp_doc_border preset), so
+			-- it never sees the diagnostic float. We de-conflict the two by hand.
 			---------------------------------------------------------------------------
+			-- Window id of the auto-opened diagnostic float, so K can dismiss it.
+			local diag_float_win = nil
+
+			-- Notification popups are floats too, but they're transient and don't sit over
+			-- the cursor — they must NOT suppress the diagnostic float.
+			local ignored_float_ft = {
+				notify = true,
+				noice = true,
+				snacks_notif = true,
+				snacks_notif_history = true,
+			}
+
+			-- True if a doc-style float (hover, signature help, …) is already on screen.
+			local function doc_float_open()
+				for _, win in ipairs(vim.api.nvim_tabpage_list_wins(0)) do
+					if vim.api.nvim_win_get_config(win).relative ~= "" then
+						local ft = vim.bo[vim.api.nvim_win_get_buf(win)].filetype
+						if not ignored_float_ft[ft] then
+							return true
+						end
+					end
+				end
+				return false
+			end
+
+			-- Close the auto diagnostic float. Safe to call when nothing is open.
+			local function close_diag_float()
+				if diag_float_win and vim.api.nvim_win_is_valid(diag_float_win) then
+					vim.api.nvim_win_close(diag_float_win, true)
+				end
+				diag_float_win = nil
+			end
+
+			-- Open the line's diagnostics and remember the window, so the K/<leader>e
+			-- keymaps below can close it before opening a popup of their own.
+			local function open_diag_float(opts)
+				close_diag_float()
+				local _, win = vim.diagnostic.open_float(nil, opts)
+				diag_float_win = win
+			end
+
 			vim.api.nvim_create_autocmd("CursorHold", {
 				callback = function()
-					vim.diagnostic.open_float(nil, { scope = "cursor" })
+					-- Don't cover a hover popup the user just asked for.
+					if doc_float_open() then
+						return
+					end
+					open_diag_float({ scope = "cursor" })
 				end,
 			})
 
@@ -221,10 +275,19 @@ return {
 					-- with the fzf-lua picker, matching the gd/gr popup. Shows subclass
 					-- overrides / concrete implementations of the symbol under the cursor.
 					map("gri", require("fzf-lua").lsp_implementations, "Go to implementations")
-					map("K", vim.lsp.buf.hover, "Hover docs")
+					-- Dismiss the auto diagnostic float first, otherwise hover opens on top
+					-- of it and the two overlap.
+					map("K", function()
+						close_diag_float()
+						vim.lsp.buf.hover()
+					end, "Hover docs")
 					map("<leader>rn", vim.lsp.buf.rename, "Rename symbol")
 					map("<leader>ca", vim.lsp.buf.code_action, "Code action")
-					map("<leader>e", vim.diagnostic.open_float, "Show line diagnostics")
+					-- Goes through open_diag_float so repeat presses replace the float
+					-- instead of stacking another one on top.
+					map("<leader>e", function()
+						open_diag_float()
+					end, "Show line diagnostics")
 					-- Copy the current line's diagnostic message(s) to the system clipboard.
 					map("<leader>cd", function()
 						local lnum = vim.api.nvim_win_get_cursor(0)[1] - 1
