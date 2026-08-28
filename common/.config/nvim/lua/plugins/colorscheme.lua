@@ -57,6 +57,14 @@ return {
 					-- Pmenu is already opaque under transparency and needs no override.
 					NormalFloat = { bg = "${float_bg}" },
 					FloatBorder = { bg = "${float_bg}", fg = "${gray}" },
+
+					-- nvim-notify (via noice) defaults `background_colour` to the
+					-- NotifyBackground group, which ships only as `hi default link
+					-- NotifyBackground Normal`. Transparent Normal means that lookup finds
+					-- no bg, so notify warns on every session and falls back to pure black
+					-- — wrong for this theme. Defining the group here beats the `default`
+					-- link and keeps notifications matching the other floats.
+					NotifyBackground = { bg = "${float_bg}" },
 				},
 			})
 
