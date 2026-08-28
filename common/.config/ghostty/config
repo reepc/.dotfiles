@@ -19,12 +19,16 @@ theme = "Atom One Dark"
 background = #282c34
 window-padding-x = 10
 window-padding-y = 10
-# background-opacity = 0.90
+background-opacity = 0.92
+# Blur what's behind the window so the transparency reads as frosted glass
+# rather than distracting desktop clutter. macOS-only; ignored elsewhere.
+background-blur = 20
 
 
 # === Windows ===
 window-new-tab-position = end
-window-save-state = always
+window-inherit-working-directory = false
+tab-inherit-working-directory = true
 
 
 # === Clipboard ===

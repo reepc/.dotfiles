@@ -9,7 +9,14 @@ return {
 		priority = 1000, -- make sure to load this before all the other start plugins
 		config = function()
 			require("onedarkpro").setup({
-				options = { cursorline = true },
+				options = {
+					cursorline = true,
+					-- Let Ghostty's `background-opacity` show through. Neovim otherwise
+					-- paints an opaque bg over the entire terminal grid, so the window
+					-- goes solid the moment you open a file — the transparency would
+					-- only ever be visible at a bare shell prompt.
+					transparency = true,
+				},
 				styles = {
 					-- Italicize function/method parameters, like VSCode's One Dark Pro.
 					comments = "italic",
@@ -40,6 +47,16 @@ return {
 					-- namespaces match classes. Scoped to `.python` via the filetype suffix,
 					-- which neovim looks up before the base group.
 					["@lsp.type.namespace.python"] = { link = "@module" },
+
+					-- `transparency` blanks NormalFloat/FloatBorder too, which leaves
+					-- hover docs, fzf popups and which-key reading straight over the
+					-- desktop. Floats are meant to sit ABOVE the buffer, so give them
+					-- back a solid background. `${float_bg}` is the theme's OWN generated
+					-- float shade (onedarkpro substitutes `${...}` from its palette), so
+					-- this restores the stock look rather than inventing a new color.
+					-- Pmenu is already opaque under transparency and needs no override.
+					NormalFloat = { bg = "${float_bg}" },
+					FloatBorder = { bg = "${float_bg}", fg = "${gray}" },
 				},
 			})
 
