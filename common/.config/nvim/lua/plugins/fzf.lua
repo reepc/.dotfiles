@@ -3,21 +3,83 @@
 -- Cmd+Shift+F (find in files), and Cmd+T (find symbol) all in one tool.
 -- It wraps the external `fzf` binary, so it stays fast even on huge projects.
 
+-- Folders that are almost always noise in a file picker: dependency trees,
+-- build output and tool caches. They're hidden by default and one keypress
+-- away when you actually need them (see `files()` below).
+local ignored_dirs = {
+	".git",
+	"node_modules",
+	".venv",
+	"venv",
+	"__pycache__",
+	".mypy_cache",
+	".pytest_cache",
+	".ruff_cache",
+	"target",
+	"dist",
+	"build",
+	".next",
+}
+
+-- `fd` and `rg` spell exclusions differently, so build both forms from the
+-- one list above: `--exclude node_modules …` vs `-g "!node_modules" …`.
+local function excludes(fmt)
+	local parts = {}
+	for _, dir in ipairs(ignored_dirs) do
+		parts[#parts + 1] = fmt:format(dir)
+	end
+	return table.concat(parts, " ")
+end
+
+-- `--hidden` makes dotfiles show up (both tools skip them by default);
+-- `--follow` walks symlinks. The exclusions are appended on top of that.
+local FD_BASE = [[--color=never --type f --type l --hidden --follow]]
+local RG_BASE = [[--color=never --files --hidden --follow]]
+
+local FD_FILTERED = FD_BASE .. " " .. excludes("--exclude %s")
+local RG_FILTERED = RG_BASE .. " " .. excludes([[-g "!%s"]])
+
+-- File picker. `show_all = true` drops the exclusions so `node_modules` and
+-- friends are searchable; <alt-a> inside the picker flips between the two
+-- modes, carrying whatever you'd already typed over to the new list.
+local function files(show_all, query)
+	local fzf = require("fzf-lua")
+	fzf.files({
+		fd_opts = show_all and FD_BASE or FD_FILTERED,
+		rg_opts = show_all and RG_BASE or RG_FILTERED,
+		prompt = show_all and "All Files❯ " or "Files❯ ",
+		query = query,
+		actions = {
+			-- `reuse` keeps the popup open so the flip looks like the list
+			-- simply refilling in place, with the typed query carried over.
+			["alt-a"] = {
+				fn = function(_, o)
+					files(not show_all, o.last_query or fzf.get_last_query())
+				end,
+				reuse = true,
+				header = false,
+			},
+		},
+	})
+end
+
 return {
 	{
 		"ibhagwan/fzf-lua",
 		dependencies = { "nvim-tree/nvim-web-devicons" }, -- file-type icons in the picker
 
-		-- By default `fd` (file finder) and `rg` (grep) skip dotfiles. We pass
-		-- `--hidden` so files/dirs starting with `.` show up, while still excluding
-		-- the `.git` directory so the picker isn't flooded with git internals.
+		-- The same exclusions apply to any other entry point into the file
+		-- picker (`:FzfLua files`, dressing's code-action list, …) so the
+		-- default view is consistent wherever it's opened from.
 		opts = {
 			files = {
-				fd_opts = [[--color=never --type f --type l --hidden --follow --exclude .git]],
-				rg_opts = [[--color=never --files --hidden --follow -g "!.git"]],
+				fd_opts = FD_FILTERED,
+				rg_opts = RG_FILTERED,
 			},
 			grep = {
-				rg_opts = [[--hidden --column --line-number --no-heading --color=always --smart-case --max-columns=4096 -g "!.git" -e]],
+				rg_opts = [[--hidden --column --line-number --no-heading --color=always --smart-case --max-columns=4096 ]]
+					.. excludes([[-g "!%s"]])
+					.. [[ -e]],
 			},
 			buffers = {
 				-- Drop the buffer you're already in from the list, so the top entry is
@@ -69,9 +131,16 @@ return {
 			{
 				"<leader>ff",
 				function()
-					require("fzf-lua").files()
+					files(false)
 				end,
 				desc = "Find files (same as Cmd+P)",
+			},
+			{
+				"<leader>fF",
+				function()
+					files(true)
+				end,
+				desc = "Find files (include node_modules, build output, …)",
 			},
 			{
 				"<leader>fg",
@@ -107,4 +176,5 @@ return {
 -- Note: this needs `fzf`, `fd` and `rg` (ripgrep) on the system/server — all three
 -- are installed by ~/.dotfiles/install.sh on both platforms. Without `fd`, files()
 -- falls back to `rg --files`; without both, it falls back to `find`, which does not
--- honour .gitignore. Likewise live_grep() degrades to plain `grep` without `rg`.
+-- honour .gitignore (nor the exclusions above). Likewise live_grep() degrades to
+-- plain `grep` without `rg`.
