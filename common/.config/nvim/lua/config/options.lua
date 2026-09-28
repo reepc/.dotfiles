@@ -95,6 +95,62 @@ vim.api.nvim_create_autocmd("FileChangedShellPost", {
 	end,
 })
 
+-- The checktime autocmd above only fires on focus/cursor events, so while nvim
+-- sits idle an agent can rewrite a file that's open in a HIDDEN buffer and that
+-- buffer stays stale. That matters for LSP too: servers read an open buffer's
+-- text, not the disk — so "I added A.new() in a.py" keeps showing
+-- "no attribute `new`" in b.py until a.py's buffer reloads. Fix: watch every
+-- loaded file's path (libuv fs_event: FSEvents/kqueue on macOS, inotify on Linux)
+-- and reload that one buffer the moment it changes. `checktime {buf}` rather than
+-- a bare `checktime`, because the bare form is deferred when not run from typed input.
+local watchers = {}
+local function unwatch(buf)
+	local w = watchers[buf]
+	if w then
+		w:stop()
+		w:close()
+		watchers[buf] = nil
+	end
+end
+local function watch(buf)
+	unwatch(buf)
+	if not vim.api.nvim_buf_is_valid(buf) or vim.bo[buf].buftype ~= "" then
+		return
+	end
+	local path = vim.api.nvim_buf_get_name(buf)
+	if path == "" or not vim.uv.fs_stat(path) then
+		return
+	end
+	local w = vim.uv.new_fs_event()
+	if not w then
+		return
+	end
+	watchers[buf] = w
+	w:start(path, {}, function()
+		vim.schedule(function()
+			if not vim.api.nvim_buf_is_loaded(buf) then
+				return unwatch(buf)
+			end
+			if vim.fn.mode() ~= "c" then
+				vim.cmd("checktime " .. buf)
+			end
+			-- Atomic writes (write temp file + rename over) swap the inode and kill the
+			-- watch, so re-arm on whatever file is at the path now.
+			watch(buf)
+		end)
+	end)
+end
+vim.api.nvim_create_autocmd({ "BufReadPost", "BufWritePost", "BufFilePost" }, {
+	callback = function(ev)
+		watch(ev.buf)
+	end,
+})
+vim.api.nvim_create_autocmd({ "BufUnload", "BufWipeout" }, {
+	callback = function(ev)
+		unwatch(ev.buf)
+	end,
+})
+
 -- === Splits (where new windows open) ===
 opt.splitright = true -- vertical splits open to the right
 opt.splitbelow = true -- horizontal splits open below

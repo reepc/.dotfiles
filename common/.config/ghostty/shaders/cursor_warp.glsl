@@ -5,9 +5,9 @@ vec3 sRGBToLinear(vec3 c) {
 
 // --- CONFIGURATION ---
 vec4 TRAIL_COLOR = vec4(sRGBToLinear(iCurrentCursorColor.rgb), iCurrentCursorColor.a); // for custom color: vec4(0.2, 0.6, 1.0, 0.5); (wrap in sRGBToLinear for correct brightness)
-const float DURATION = 0.25; // total animation time (a touch longer so the block's stretch is visible, not a flick)
+const float DURATION = 0.12; // total animation time. Short enough to COMPLETE between local keystrokes (~25-40ms key repeat); at 0.25 each new keypress aborted the previous smear at ~12% progress.
 const float TRAIL_SIZE = 0.4; // 0.0 = all corners move together. 1.0 = max smear (leading corners jump instantly -> thin streak). 0.4 keeps it a fat block stretching across.
-const float THRESHOLD_MIN_DISTANCE = 1.5; // min distance to show trail (units of cursor height)
+const float THRESHOLD_MIN_DISTANCE = 0.4; // min distance to show trail (units of cursor HEIGHT, even horizontally). At 1.5 a single-line j/k move (= 1.0) drew no trail at all; 0.4 lets ordinary hjkl motion smear.
 const float BLUR = 1.0; // blur size in pixels (for antialiasing)
 const float TRAIL_THICKNESS = 1.0;  // 1.0 = full cursor height, 0.0 = zero height, >1.0 = funky aah
 const float TRAIL_THICKNESS_X = 0.9;
